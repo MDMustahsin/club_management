@@ -9,6 +9,7 @@ from .serializers import (
 )
 from api.permissions.base_permissions import (
     IsAdminRole,
+    IsAdminOrClubAdmin,
     IsMemberOrAdmin,
     IsOwnerOrAdmin
 )
@@ -97,16 +98,25 @@ class UpdateMembershipStatusView(generics.UpdateAPIView):
     """
     OOP Principle: Inheritance + Polymorphism
     PATCH /api/memberships/<id>/status/
-    Admin approves or rejects using model's state methods
+    Admin or club admin approves or rejects using model's state methods
     """
     queryset = Membership.objects.all()
     serializer_class = MembershipStatusSerializer
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsAdminOrClubAdmin]
     http_method_names = ['patch']
 
     def update(self, request, *args, **kwargs):
         """OOP: Overrides parent for custom response"""
         instance = self.get_object()
+        
+        # Check if club admin can manage this membership
+        if request.user.role == 'CLUB_ADMIN':
+            if instance.club.admin != request.user:
+                return Response(
+                    {'error': 'You can only manage memberships for your club.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
         serializer = self.get_serializer(
             instance,
             data=request.data,
@@ -158,15 +168,55 @@ class ClubMembersView(generics.ListAPIView):
     """
     OOP Principle: Inheritance
     GET /api/memberships/club/<club_id>/members/
-    View approved members of a specific club
+    View approved members of a specific club (admin or club admin)
     """
     serializer_class = MembershipSerializer
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsAdminOrClubAdmin]
 
     def get_queryset(self):
         """OOP: Overrides parent — filters by club and status"""
         club_id = self.kwargs.get('club_id')
+        
+        # Club admins can only view their own club's members
+        if self.request.user.role == 'CLUB_ADMIN':
+            from apps.clubs.models import Club
+            try:
+                club = Club.objects.get(id=club_id)
+                if club.admin != self.request.user:
+                    return Membership.objects.none()
+            except Club.DoesNotExist:
+                return Membership.objects.none()
+        
         return Membership.objects.filter(
             club_id=club_id,
             status='APPROVED'
+        )
+
+
+class ClubPendingMembersView(generics.ListAPIView):
+    """
+    OOP Principle: Inheritance
+    GET /api/memberships/club/<club_id>/pending/
+    View pending members of a specific club (admin or club admin)
+    """
+    serializer_class = MembershipSerializer
+    permission_classes = [IsAdminOrClubAdmin]
+
+    def get_queryset(self):
+        """OOP: Overrides parent — filters by club and pending status"""
+        club_id = self.kwargs.get('club_id')
+        
+        # Club admins can only view their own club's pending members
+        if self.request.user.role == 'CLUB_ADMIN':
+            from apps.clubs.models import Club
+            try:
+                club = Club.objects.get(id=club_id)
+                if club.admin != self.request.user:
+                    return Membership.objects.none()
+            except Club.DoesNotExist:
+                return Membership.objects.none()
+        
+        return Membership.objects.filter(
+            club_id=club_id,
+            status='PENDING'
         )

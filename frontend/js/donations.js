@@ -41,7 +41,7 @@ const Donations = {
 
         try {
             const response = await Utils.post(
-                CONFIG.ENDPOINTS.DONATION_MEMBER,
+                CONFIG.ENDPOINTS.DONATION_CREATE,
                 data
             );
 

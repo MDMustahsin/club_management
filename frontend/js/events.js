@@ -134,23 +134,27 @@ const Events = {
         };
 
         try {
+            console.log('Creating event with data:', data);
             const response = await Utils.post(
                 CONFIG.ENDPOINTS.EVENT_CREATE,
                 data
             );
 
+            console.log('Response status:', response.status);
             const res = await response.json();
+            console.log('Response data:', res);
 
             if (response.ok) {
                 Utils.showToast('Event created successfully! 🎉');
                 document.getElementById('create-event-form').reset();
                 this.loadEvents();
             } else {
-                Utils.showToast(res.detail || res.error || 'Failed to create event', 'error');
+                Utils.showToast(res.detail || res.error || JSON.stringify(res) || 'Failed to create event', 'error');
             }
 
         } catch (error) {
-            Utils.showToast('Error creating event', 'error');
+            console.error('Error creating event:', error);
+            Utils.showToast('Error creating event: ' + error.message, 'error');
         }
     }
 };

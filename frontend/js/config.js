@@ -44,9 +44,8 @@ const CONFIG = {
         EVENT_CANCEL_REGISTRATION: (id) => `/events/registration/${id}/cancel/`,
 
         // Donations
+        DONATION_CREATE: '/donations/create/',
         DONATION_GUEST: '/donations/guest/',
-        DONATION_MEMBER: '/donations/member/',
-        DONATION_RECEIPT: (id) => `/donations/receipt/${id}/`,
         DONATION_MY: '/donations/my/',
         DONATION_ALL: '/donations/all/',
         DONATION_CLUB: (id) => `/donations/club/${id}/`,

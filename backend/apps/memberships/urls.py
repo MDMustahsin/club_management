@@ -7,6 +7,7 @@ from .views import (
     UpdateMembershipStatusView,
     CancelMembershipView,
     ClubMembersView,
+    ClubPendingMembersView,
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('<int:pk>/status/', UpdateMembershipStatusView.as_view(), name='membership-status'),
     path('<int:pk>/cancel/', CancelMembershipView.as_view(), name='membership-cancel'),
     path('club/<int:club_id>/members/', ClubMembersView.as_view(), name='club-members'),
+    path('club/<int:club_id>/pending/', ClubPendingMembersView.as_view(), name='club-pending-members'),
 ]
