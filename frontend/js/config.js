@@ -37,7 +37,7 @@ const CONFIG = {
         EVENT_UPDATE: (id) => `/events/${id}/update/`,
         EVENT_DELETE: (id) => `/events/${id}/delete/`,
         EVENT_REGISTER: '/events/register/',
-        EVENT_MY_REGISTRATIONS: '/events/my-registrations/',
+        EVENT_MY_REGISTRATIONS: '/events/my/',
         EVENT_PARTICIPANTS: (id) => `/events/${id}/participants/`,
         EVENT_CANCEL_REGISTRATION: (id) => `/events/registration/${id}/cancel/`,
 

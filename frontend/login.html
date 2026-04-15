@@ -57,7 +57,12 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
         if (result.success) {
             Utils.showToast('Login successful! 🎉');
-            Utils.redirect('dashboard.html');
+            // Redirect based on role
+            if (Auth.isAdmin()) {
+                Utils.redirect('admin.html');
+            } else {
+                Utils.redirect('dashboard.html');
+            }
         } else {
             Utils.showToast(result.error.detail || 'Invalid email or password', 'error');
         }

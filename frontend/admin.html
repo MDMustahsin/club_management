@@ -89,7 +89,29 @@
         <!-- CLUBS -->
         <div id="clubs" class="dashboard-section">
             <h2>All Clubs</h2>
+            <button onclick="Admin.showCreateClubModal()" class="btn btn-primary" style="margin-bottom: 20px;">
+                + Create New Club
+            </button>
             <div id="clubs-list" class="grid-3"></div>
+        </div>
+
+        <!-- CREATE CLUB MODAL -->
+        <div id="create-club-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <span onclick="Admin.closeCreateClubModal()" class="close">&times;</span>
+                <h2>Create New Club</h2>
+                <form id="create-club-form">
+                    <div class="form-group">
+                        <label>Club Name</label>
+                        <input type="text" id="club-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="club-description" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Club</button>
+                </form>
+            </div>
         </div>
 
         <!-- EVENTS -->

@@ -76,14 +76,29 @@ const Admin = {
     },
 
     async updateStatus(id, status) {
+        let data = { status };
+        
+        // If rejecting, ask for reason
+        if (status === 'REJECTED') {
+            const reason = prompt('Please provide a reason for rejection:');
+            if (!reason) {
+                Utils.showToast('Rejection reason is required', 'error');
+                return;
+            }
+            data.rejection_reason = reason;
+        }
+
         const res = await Utils.patch(
             CONFIG.ENDPOINTS.MEMBERSHIP_STATUS(id),
-            { status }
+            data
         );
 
         if (res.ok) {
             Utils.showToast('Updated');
             this.loadMemberships();
+        } else {
+            const error = await res.json();
+            Utils.showToast(error.detail || 'Error updating status', 'error');
         }
     },
 
@@ -160,5 +175,53 @@ const Admin = {
                 ${Utils.getStatusBadge(d.status)}
             </div>
         `).join('');
+    },
+
+    // 🔹 CREATE CLUB MODAL
+    showCreateClubModal() {
+        document.getElementById('create-club-modal').style.display = 'flex';
+    },
+
+    closeCreateClubModal() {
+        document.getElementById('create-club-modal').style.display = 'none';
+        document.getElementById('create-club-form').reset();
+    },
+
+    async createClub(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('club-name').value;
+        const description = document.getElementById('club-description').value;
+
+        try {
+            const res = await Utils.post(CONFIG.ENDPOINTS.CLUB_CREATE, {
+                name,
+                description,
+                max_members: 100  // Default max members
+            });
+
+            if (res.ok) {
+                Utils.showToast('Club created successfully! 🎉');
+                this.closeCreateClubModal();
+                this.loadClubs();
+                this.loadStats();
+            } else {
+                const error = await res.json();
+                const errorMsg = error.detail || Object.values(error).flat().join(', ') || 'Error creating club';
+                Utils.showToast(errorMsg, 'error');
+            }
+        } catch (err) {
+            Utils.showToast('Something went wrong', 'error');
+        }
     }
 };
+
+// Set up form handler when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('create-club-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            Admin.createClub(e);
+        });
+    }
+});
