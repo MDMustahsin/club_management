@@ -1,8 +1,30 @@
 const Donations = {
 
-    init() {
+    async init() {
+        await this.loadClubs();
+        
         document.getElementById('donationForm')
-            .addEventListener('submit', this.submit);
+            .addEventListener('submit', (e) => this.submit(e));
+    },
+
+    async loadClubs() {
+        try {
+            const response = await Utils.get(CONFIG.ENDPOINTS.CLUBS);
+            const data = await response.json();
+            const clubs = data.results || data;
+
+            const select = document.getElementById('club');
+            
+            clubs.forEach(club => {
+                const option = document.createElement('option');
+                option.value = club.id;
+                option.textContent = `${club.name} (ID: ${club.id})`;
+                select.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('Error loading clubs:', error);
+        }
     },
 
     async submit(e) {
@@ -10,8 +32,9 @@ const Donations = {
 
         if (!Auth.requireLogin()) return;
 
+        const clubId = document.getElementById('club').value;
         const data = {
-            club: document.getElementById('club').value,
+            club: parseInt(clubId),
             amount: document.getElementById('amount').value,
             message: document.getElementById('message').value
         };
@@ -26,6 +49,7 @@ const Donations = {
 
             if (response.ok) {
                 Utils.showToast('Donation successful 💚');
+                document.getElementById('donationForm').reset();
             } else {
                 Utils.showToast(res.detail || 'Failed', 'error');
             }

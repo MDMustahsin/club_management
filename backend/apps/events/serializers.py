@@ -17,15 +17,31 @@ class EventCreateSerializer(BaseSerializer):
         model = Event
         fields = (
             'id', 'club', 'title', 'description',
-            'date', 'location', 'capacity'
+            'date', 'location', 'capacity', 'created_by'
         )
+        read_only_fields = ('id', 'created_by')
+
+    def validate_club(self, value):
+        """Validate club is active"""
+        if not value.is_active:
+            raise serializers.ValidationError(
+                'Cannot create event for inactive club'
+            )
+        return value
 
     def validate(self, data):
-        if data['capacity'] <= 0:
+        if data.get('capacity', 0) <= 0:
             raise serializers.ValidationError(
                 'Capacity must be greater than 0'
             )
         return data
+
+    def create(self, validated_data):
+        """Set created_by to current user"""
+        request = self.context.get('request')
+        if request and request.user:
+            validated_data['created_by'] = request.user
+        return super().create(validated_data)
 
 
 class EventRegisterSerializer(BaseSerializer):

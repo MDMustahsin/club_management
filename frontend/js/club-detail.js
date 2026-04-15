@@ -34,6 +34,7 @@ const ClubDetail = {
                     <div class="club-card-image">🏛️</div>
 
                     <h2>${club.name}</h2>
+                    <p><strong>Club ID:</strong> ${club.id}</p>
 
                     <p>${club.description}</p>
 

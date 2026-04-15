@@ -1,13 +1,14 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from .models import Event, EventRegistration
 from .serializers import (
     EventSerializer,
     EventCreateSerializer,
     EventRegisterSerializer
 )
-from api.permissions.base_permissions import IsAdminRole
+from api.permissions.base_permissions import IsAdminRole, IsAdminOrClubAdmin
 
 
 class EventListView(generics.ListAPIView):
@@ -17,7 +18,31 @@ class EventListView(generics.ListAPIView):
 
 class EventCreateView(generics.CreateAPIView):
     serializer_class = EventCreateSerializer
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsAdminOrClubAdmin]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # If club admin, validate they can create for this club
+        if request.user.role == 'CLUB_ADMIN':
+            club = serializer.validated_data.get('club')
+            if club.admin != request.user:
+                return Response(
+                    {'error': 'You can only create events for clubs you admin.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        event = serializer.save()
+        return Response({
+            'message': f'Event "{event.title}" created successfully.',
+            'event': EventSerializer(event).data
+        }, status=status.HTTP_201_CREATED)
 
 
 class RegisterEventView(generics.CreateAPIView):
