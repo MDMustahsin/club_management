@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Club Admin Panel</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<div id="navbar"></div>
+
+<h2>My Club Dashboard</h2>
+
+<div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-label">Club Admin</div>
+
+            <div class="sidebar-link active" onclick="ClubAdmin.showSection('overview')">
+                📊 Overview
+            </div>
+
+            <div class="sidebar-link" onclick="ClubAdmin.showSection('pending')">
+                🏛️ Pending Applications
+            </div>
+
+            <div class="sidebar-link" onclick="ClubAdmin.showSection('members')">
+                👥 Members
+            </div>
+
+            <div class="sidebar-link" onclick="ClubAdmin.showSection('events')">
+                📅 Events
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="dashboard-main">
+
+        <!-- Overview -->
+        <div id="overview" class="dashboard-section active">
+            <h2>My Clubs</h2>
+            <div id="my-clubs-list" class="grid-3"></div>
+        </div>
+
+        <!-- Pending Applications -->
+        <div id="pending" class="dashboard-section">
+            <h2>Pending Membership Applications</h2>
+            <div id="pending-list" class="grid-3"></div>
+        </div>
+
+        <!-- Members -->
+        <div id="members" class="dashboard-section">
+            <h2>Club Members</h2>
+            <div id="members-list" class="grid-3"></div>
+        </div>
+
+        <!-- Events -->
+        <div id="events" class="dashboard-section">
+            <h2>Club Events</h2>
+            <div id="club-events-list" class="grid-3"></div>
+        </div>
+
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/club-admin.js"></script>
+
+<script>
+Utils.renderNavbar();
+Utils.renderFooter();
+
+ClubAdmin.init();
+</script>
+
+</body>
+</html>

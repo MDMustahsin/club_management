@@ -60,6 +60,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             // Redirect based on role
             if (Auth.isAdmin()) {
                 Utils.redirect('admin.html');
+            } else if (Auth.isClubAdmin()) {
+                Utils.redirect('club-admin.html');
             } else {
                 Utils.redirect('dashboard.html');
             }

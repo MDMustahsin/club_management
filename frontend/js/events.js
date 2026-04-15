@@ -124,33 +124,57 @@ const Events = {
         }
 
         const clubId = document.getElementById('event-club').value;
+        
+        // Format date for Django (YYYY-MM-DDTHH:MM)
+        let dateValue = document.getElementById('event-date').value;
+        if (dateValue) {
+            // Convert from datetime-local format to Django expected format
+            dateValue = dateValue.replace('T', ' ') + ':00';
+        }
+        
         const data = {
             club: parseInt(clubId),
             title: document.getElementById('event-title').value,
             description: document.getElementById('event-description').value,
-            date: document.getElementById('event-date').value,
+            date: dateValue,
             location: document.getElementById('event-location').value,
             capacity: parseInt(document.getElementById('event-capacity').value)
         };
 
         try {
             console.log('Creating event with data:', data);
-            const response = await Utils.post(
-                CONFIG.ENDPOINTS.EVENT_CREATE,
-                data
+            const response = await fetch(
+                CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.EVENT_CREATE,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    },
+                    body: JSON.stringify(data)
+                }
             );
 
             console.log('Response status:', response.status);
-            const res = await response.json();
+            const text = await response.text();
+            console.log('Response text:', text);
+            
+            if (!response.ok) {
+                try {
+                    const res = JSON.parse(text);
+                    Utils.showToast(res.detail || res.error || JSON.stringify(res) || 'Failed to create event', 'error');
+                } catch(e) {
+                    Utils.showToast('Error: Server returned ' + response.status, 'error');
+                }
+                return;
+            }
+            
+            const res = JSON.parse(text);
             console.log('Response data:', res);
 
-            if (response.ok) {
-                Utils.showToast('Event created successfully! 🎉');
-                document.getElementById('create-event-form').reset();
-                this.loadEvents();
-            } else {
-                Utils.showToast(res.detail || res.error || JSON.stringify(res) || 'Failed to create event', 'error');
-            }
+            Utils.showToast('Event created successfully! 🎉');
+            document.getElementById('create-event-form').reset();
+            this.loadEvents();
 
         } catch (error) {
             console.error('Error creating event:', error);

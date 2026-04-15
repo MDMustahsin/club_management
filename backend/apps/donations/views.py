@@ -26,9 +26,13 @@ class CreateDonationView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         donation = serializer.save()
+        
+        # Auto-approve donations (no pending status needed)
+        donation.status = 'COMPLETED'
+        donation.save()
 
         return Response({
-            'message': f'Donation of {donation.amount} submitted.',
+            'message': f'Donation of {donation.amount} completed successfully!',
             'donation': DonationSerializer(donation).data
         }, status=status.HTTP_201_CREATED)
 
