@@ -38,10 +38,20 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
     def create(self, request, *args, **kwargs):
-        """OOP: Overrides parent create() for custom response"""
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+
+        role = request.data.get('role', 'STUDENT')
+
+        if role == 'ADMIN':
+            user = CustomUser.objects.create_superuser(
+                username=serializer.validated_data['email'],
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password']
+            )
+        else:
+            user = serializer.save()
+
         return Response({
             'message': 'Registration successful.',
             'user': UserSerializer(user).data
@@ -55,6 +65,13 @@ class LoginView(APIView):
     POST /api/auth/login/
     """
     permission_classes = [AllowAny]
+    
+    def create(self, validated_data):
+        email = validated_data.get('email')
+        validated_data['username'] = email   # 🔥 KEY FIX
+
+        user = CustomUser.objects.create_user(**validated_data)
+        return user
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
