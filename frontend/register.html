@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body class="auth-page">
+
+<div class="auth-card">
+
+    <!-- 🔹 Logo -->
+    <div class="auth-logo">
+        <h1>🎓 Club<span>Hub</span></h1>
+        <p>Create your account</p>
+    </div>
+
+    <!-- 🔹 FORM -->
+    <form id="registerForm">
+
+        <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="username" required>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" required>
+        </div>
+
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" required>
+        </div>
+
+        <button class="btn btn-primary btn-full">
+            Register
+        </button>
+
+    </form>
+
+    <!-- 🔹 Footer -->
+    <div class="auth-footer">
+        Already have an account?
+        <a href="login.html">Login</a>
+    </div>
+
+</div>
+
+<!-- JS -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const data = {
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+    };
+
+    try {
+        const response = await Auth.register(data);
+
+        if (response.ok) {
+            Utils.showToast('Registered successfully 🎉');
+            Utils.redirect('login.html');
+        } else {
+            const error = await response.json();
+            Utils.showToast(error.detail || 'Error', 'error');
+        }
+
+    } catch (err) {
+        Utils.showToast('Something went wrong', 'error');
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Club Details</title>
+
+    <!-- ✅ CSS (VERY IMPORTANT) -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body>
+
+<div id="navbar"></div>
+
+<div class="page-wrapper">
+    <div class="container">
+
+        <!-- 🔹 CLUB INFO -->
+        <div id="club-detail"></div>
+
+        <!-- 🔹 MEMBERS -->
+        <div class="section-header">
+            <h2>Members</h2>
+        </div>
+
+        <div id="members-list" class="grid-3"></div>
+
+        <!-- 🔹 EVENTS -->
+        <div class="section-header">
+            <h2>Events</h2>
+        </div>
+
+        <div id="events-list" class="grid-3"></div>
+
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/club-detail.js"></script>
+
+<script>
+Utils.renderNavbar();
+Utils.renderFooter();
+
+ClubDetail.init();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Events</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/cards.css">
+</head>
+
+<body>
+
+<div id="navbar"></div>
+
+<div class="page-wrapper">
+    <div class="container">
+
+        <div class="section-header">
+            <h2>All Events</h2>
+        </div>
+
+        <div id="events-grid" class="grid-3"></div>
+
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/events.js"></script>
+
+<script>
+Utils.renderNavbar('events');
+Utils.renderFooter();
+
+Events.loadEvents();
+</script>
+
+</body>
+</html>

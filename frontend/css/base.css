@@ -1,0 +1,291 @@
+/* ── CSS Variables ── */
+:root {
+    --primary: #1a1f36;
+    --primary-light: #2d3561;
+    --accent: #f5a623;
+    --accent-hover: #e09415;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --info: #17a2b8;
+    --purple: #6f42c1;
+    --secondary: #6c757d;
+    --white: #ffffff;
+    --light: #f8f9fa;
+    --light-gray: #e9ecef;
+    --dark: #212529;
+    --text: #333333;
+    --text-muted: #6c757d;
+    --border: #dee2e6;
+    --shadow: 0 2px 15px rgba(0,0,0,0.08);
+    --shadow-hover: 0 8px 25px rgba(0,0,0,0.15);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --transition: all 0.3s ease;
+    --font: 'Inter', sans-serif;
+}
+
+/* ── Reset ── */
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: var(--font);
+    color: var(--text);
+    background-color: var(--light);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition);
+}
+
+img { max-width: 100%; }
+
+ul { list-style: none; }
+
+/* ── Typography ── */
+h1 { font-size: 2.5rem; font-weight: 700; }
+h2 { font-size: 2rem; font-weight: 700; }
+h3 { font-size: 1.5rem; font-weight: 600; }
+h4 { font-size: 1.25rem; font-weight: 600; }
+h5 { font-size: 1rem; font-weight: 600; }
+
+p { color: var(--text-muted); }
+
+/* ── Layout ── */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.page-wrapper {
+    padding: 40px 0;
+    min-height: calc(100vh - 70px);
+}
+
+.section {
+    padding: 60px 0;
+}
+
+/* ── Grid ── */
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+/* ── Flex ── */
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-col { display: flex; flex-direction: column; }
+.gap-1 { gap: 8px; }
+.gap-2 { gap: 16px; }
+.gap-3 { gap: 24px; }
+
+/* ── Badges ── */
+.badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.badge-success { background: #d4edda; color: #155724; }
+.badge-danger { background: #f8d7da; color: #721c24; }
+.badge-warning { background: #fff3cd; color: #856404; }
+.badge-info { background: #d1ecf1; color: #0c5460; }
+.badge-secondary { background: #e2e3e5; color: #383d41; }
+.badge-purple { background: #e2d9f3; color: #4a235a; }
+
+/* ── Toast Notifications ── */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 14px 24px;
+    border-radius: var(--radius-sm);
+    color: var(--white);
+    font-weight: 500;
+    font-size: 0.9rem;
+    z-index: 9999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: var(--transition);
+    max-width: 350px;
+    box-shadow: var(--shadow-hover);
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-success { background: var(--success); }
+.toast-error { background: var(--danger); }
+.toast-warning { background: var(--warning); color: var(--dark); }
+.toast-info { background: var(--info); }
+
+/* ── Loading Spinner ── */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 60px 20px;
+    gap: 16px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--light-gray);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ── Empty and Error States ── */
+.empty-state,
+.error-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+/* ── Progress Bar ── */
+.progress-bar-wrap {
+    background: var(--light-gray);
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: var(--accent);
+    transition: width 0.5s ease;
+}
+
+.progress-bar-fill.full { background: var(--danger); }
+
+/* ── Modal ── */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 32px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow-hover);
+    position: relative;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    line-height: 1;
+}
+
+.modal-close:hover { color: var(--danger); }
+
+/* ── Table ── */
+.table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--white);
+}
+
+thead {
+    background: var(--primary);
+    color: var(--white);
+}
+
+th {
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+tbody tr:hover { background: var(--light); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .container { padding: 0 16px; }
+}
+
+@media (max-width: 480px) {
+    .grid-4 { grid-template-columns: 1fr; }
+}

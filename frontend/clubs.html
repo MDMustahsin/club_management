@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clubs</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<div id="navbar"></div>
+
+<div class="page-wrapper">
+    <div class="container">
+
+        <div class="section-header">
+            <h2>All Clubs</h2>
+        </div>
+
+        <div id="clubs-grid" class="grid-3"></div>
+
+    </div>
+</div>
+
+<div id="footer"></div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/clubs.js"></script>
+
+<script>
+Utils.renderNavbar('clubs');
+Utils.renderFooter();
+
+// 🔥 Load clubs
+Clubs.loadClubs();
+</script>
+
+</body>
+</html>

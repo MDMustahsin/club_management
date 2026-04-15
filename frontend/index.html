@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClubHub — Club Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <style>
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: var(--white);
+            padding: 100px 0 80px;
+            text-align: center;
+        }
+        .hero h1 { font-size: 3rem; margin-bottom: 16px; }
+        .hero h1 span { color: var(--accent); }
+        .hero p { font-size: 1.1rem; color: rgba(255,255,255,0.8); max-width: 600px; margin: 0 auto 32px; }
+        .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+        /* Stats Section */
+        .stats-section { padding: 60px 0; background: var(--white); }
+        .stats-section .grid-4 { gap: 24px; }
+
+        /* Section headers */
+        .section-title { text-align: center; margin-bottom: 40px; }
+        .section-title h2 { color: var(--dark); margin-bottom: 8px; }
+        .section-title p { color: var(--text-muted); }
+
+        /* CTA Banner */
+        .cta-banner {
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            padding: 60px 0;
+            text-align: center;
+            color: var(--white);
+        }
+        .cta-banner h2 { color: var(--white); margin-bottom: 12px; }
+        .cta-banner p { color: rgba(255,255,255,0.9); margin-bottom: 28px; }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <div id="navbar"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Welcome to <span>ClubHub</span></h1>
+            <p>Discover clubs, join events, and connect with your university community. All in one place.</p>
+            <div class="hero-buttons">
+                <a href="clubs.html" class="btn btn-primary btn-lg">Browse Clubs</a>
+                <a href="events.html" class="btn btn-outline-white btn-lg">View Events</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="grid-4" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">🏛️</div>
+                    <div>
+                        <div class="stat-value" id="stat-clubs">—</div>
+                        <div class="stat-label">Active Clubs</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon gold">👥</div>
+                    <div>
+                        <div class="stat-value" id="stat-members">—</div>
+                        <div class="stat-label">Members</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">📅</div>
+                    <div>
+                        <div class="stat-value" id="stat-events">—</div>
+                        <div class="stat-label">Upcoming Events</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">💰</div>
+                    <div>
+                        <div class="stat-value" id="stat-donations">—</div>
+                        <div class="stat-label">Total Donated (BDT)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Clubs -->
+    <section class="section" style="background: var(--light);">
+        <div class="container">
+            <div class="section-title">
+                <h2>Featured Clubs</h2>
+                <p>Find your community and start your journey</p>
+            </div>
+            <div class="grid-3" id="clubs-grid">
+                <!-- Loaded by JS -->
+            </div>
+            <div style="text-align:center; margin-top: 32px;">
+                <a href="clubs.html" class="btn btn-dark">View All Clubs →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Upcoming Events -->
+    <section class="section" style="background: var(--white);">
+        <div class="container">
+            <div class="section-title">
+                <h2>Upcoming Events</h2>
+                <p>Don't miss out on what's happening around campus</p>
+            </div>
+            <div class="grid-3" id="events-grid">
+                <!-- Loaded by JS -->
+            </div>
+            <div style="text-align:center; margin-top: 32px;">
+                <a href="events.html" class="btn btn-dark">View All Events →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="cta-banner">
+        <div class="container">
+            <h2>Ready to Make a Difference?</h2>
+            <p>Support your favorite clubs with a donation — every contribution counts.</p>
+            <a href="donate.html" class="btn btn-dark btn-lg">Donate Now 💛</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <div id="footer"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/clubs.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // Initialize page
+        Utils.renderNavbar('home');
+        Utils.renderFooter();
+
+        Clubs.loadClubs();
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const clubsRes = await Utils.get(CONFIG.ENDPOINTS.CLUBS);
+                const clubsData = await clubsRes.json();
+                document.getElementById('stat-clubs').textContent = clubsData.length;
+
+                const eventsRes = await Utils.get(CONFIG.ENDPOINTS.EVENTS + '?status=UPCOMING');
+                const eventsData = await eventsRes.json();
+                document.getElementById('stat-events').textContent = eventsData.length;
+
+                let totalMembers = 0;
+                clubsData.forEach(c => totalMembers += (c.member_count || 0));
+                document.getElementById('stat-members').textContent = totalMembers;
+
+                document.getElementById('stat-donations').textContent = '—';
+            } catch (e) {
+                console.log('Stats load error:', e);
+            }
+        }
+
+        // Load featured clubs
+        async function loadClubs() {
+            const grid = document.getElementById('clubs-grid');
+            Utils.showLoading('clubs-grid');
+            try {
+                const res = await Utils.get(CONFIG.ENDPOINTS.CLUBS);
+                const clubs = await res.json();
+                const featured = clubs.slice(0, 3);
+                if (featured.length === 0) {
+                    Utils.showEmpty('clubs-grid', 'No clubs available yet.');
+                    return;
+                }
+                grid.innerHTML = featured.map(club => `
+                    <div class="card club-card" onclick="window.location='club-detail.html?id=${club.id}'">
+                        <div class="club-card-image">🎓</div>
+                        <div class="card-body">
+                            <h3>${club.name}</h3>
+                            <p>${Utils.truncate(club.description, 100)}</p>
+                            <div class="club-card-meta">
+                                <span>👥 ${club.member_count} / ${club.max_members} members</span>
+                                ${club.is_full ? '<span class="badge badge-danger">Full</span>' : '<span class="badge badge-success">Open</span>'}
+                            </div>
+                            <div class="progress-bar-wrap">
+                                <div class="progress-bar-fill ${club.is_full ? 'full' : ''}"
+                                     style="width: ${Math.min((club.member_count/club.max_members)*100, 100)}%">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <a href="club-detail.html?id=${club.id}" class="btn btn-dark btn-sm">View Details</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                Utils.showError('clubs-grid', 'Failed to load clubs.');
+            }
+        }
+
+        // Load upcoming events
+        async function loadEvents() {
+            const grid = document.getElementById('events-grid');
+            Utils.showLoading('events-grid');
+            try {
+                const res = await Utils.get(CONFIG.ENDPOINTS.EVENTS + '?status=UPCOMING');
+                const events = await res.json();
+                const featured = events.slice(0, 3);
+                if (featured.length === 0) {
+                    Utils.showEmpty('events-grid', 'No upcoming events yet.');
+                    return;
+                }
+                grid.innerHTML = featured.map(event => {
+                    const date = new Date(event.date);
+                    return `
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="flex gap-2" style="margin-bottom:16px;">
+                                <div class="event-card-date">
+                                    <div class="day">${date.getDate()}</div>
+                                    <div class="month">${date.toLocaleString('default',{month:'short'})}</div>
+                                </div>
+                                <div>
+                                    <h4 style="color:var(--dark);margin-bottom:4px;">${event.title}</h4>
+                                    <p style="font-size:0.85rem;">📍 ${event.location}</p>
+                                    <p style="font-size:0.85rem;">🏛️ ${event.club?.name || 'N/A'}</p>
+                                </div>
+                            </div>
+                            <p style="font-size:0.85rem;">${Utils.truncate(event.description, 80)}</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="events.html" class="btn btn-primary btn-sm">View Event</a>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                Utils.showError('events-grid', 'Failed to load events.');
+            }
+        }
+
+        // Run on page load
+        loadStats();
+        loadClubs();
+        loadEvents();
+    </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navbar.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<div id="navbar"></div>
+
+<h2>Admin Panel</h2>
+
+<h3>Pending Membership Requests</h3>
+
+<div class="dashboard-layout">
+
+    <!-- 🔹 SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-label">Admin Panel</div>
+
+            <div class="sidebar-link active" onclick="Admin.showSection('overview')">
+                📊 Overview
+            </div>
+
+            <div class="sidebar-link" onclick="Admin.showSection('memberships')">
+                🏛️ Memberships
+            </div>
+
+            <div class="sidebar-link" onclick="Admin.showSection('clubs')">
+                🏛️ Clubs
+            </div>
+
+            <div class="sidebar-link" onclick="Admin.showSection('events')">
+                📅 Events
+            </div>
+
+            <div class="sidebar-link" onclick="Admin.showSection('donations')">
+                💰 Donations
+            </div>
+        </div>
+    </div>
+
+    <!-- 🔹 MAIN -->
+    <div class="dashboard-main">
+
+        <!-- OVERVIEW -->
+        <div id="overview" class="dashboard-section active">
+            <div class="stats-row">
+
+                <div class="stat-card">
+                    <div class="stat-icon blue">👥</div>
+                    <div>
+                        <div id="stat-users" class="stat-value">0</div>
+                        <div class="stat-label">Users</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">🏛️</div>
+                    <div>
+                        <div id="stat-clubs" class="stat-value">0</div>
+                        <div class="stat-label">Clubs</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon gold">💰</div>
+                    <div>
+                        <div id="stat-donations" class="stat-value">0</div>
+                        <div class="stat-label">Donations</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- MEMBERSHIPS -->
+        <div id="memberships" class="dashboard-section">
+            <h2>Pending Memberships</h2>
+            <div id="pending-memberships" class="grid-3"></div>
+        </div>
+
+        <!-- CLUBS -->
+        <div id="clubs" class="dashboard-section">
+            <h2>All Clubs</h2>
+            <div id="clubs-list" class="grid-3"></div>
+        </div>
+
+        <!-- EVENTS -->
+        <div id="events" class="dashboard-section">
+            <h2>All Events</h2>
+            <div id="events-list" class="grid-3"></div>
+        </div>
+
+        <!-- DONATIONS -->
+        <div id="donations" class="dashboard-section">
+            <h2>All Donations</h2>
+            <div id="donations-list" class="grid-3"></div>
+        </div>
+
+    </div>
+</div>
+
+<div id="pending-memberships"></div>
+
+<h3>All Users</h3>
+<div id="users"></div>
+
+<div id="footer"></div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/admin.js"></script>
+
+<script>
+Utils.renderNavbar();
+Utils.renderFooter();
+
+Admin.init();
+</script>
+
+</body>
+</html>
