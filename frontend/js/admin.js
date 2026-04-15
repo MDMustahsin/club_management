@@ -4,11 +4,11 @@ const Admin = {
         if (!Auth.requireAdmin()) return;
 
         this.loadAll();
+        this.loadEventCreateClubs();
     },
 
     // 🔹 SWITCH SECTIONS
-    showSection(sectionId) {
-
+    showSection(event, sectionId) {
         document.querySelectorAll('.dashboard-section')
             .forEach(s => s.classList.remove('active'));
 
@@ -18,7 +18,9 @@ const Admin = {
         document.querySelectorAll('.sidebar-link')
             .forEach(l => l.classList.remove('active'));
 
-        event.target.classList.add('active');
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
     },
 
     // 🔹 LOAD ALL DATA
@@ -130,26 +132,107 @@ const Admin = {
         `).join('');
     },
 
+    async loadEventCreateClubs() {
+        try {
+            const res = await Utils.get(CONFIG.ENDPOINTS.CLUBS);
+            const data = await res.json();
+            const clubs = data.results || data;
+            const select = document.getElementById('admin-event-club');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">Select a club...</option>' +
+                clubs.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        } catch (err) {
+            console.error('Error loading clubs for event creation:', err);
+        }
+    },
+
+    async createEvent(e) {
+        e.preventDefault();
+
+        const clubId = parseInt(document.getElementById('admin-event-club').value, 10);
+        const title = document.getElementById('admin-event-title').value.trim();
+        const description = document.getElementById('admin-event-description').value.trim();
+        let dateValue = document.getElementById('admin-event-date').value;
+        const location = document.getElementById('admin-event-location').value.trim();
+        const capacity = parseInt(document.getElementById('admin-event-capacity').value, 10);
+
+        if (!clubId || Number.isNaN(clubId)) {
+            Utils.showToast('Please select a club for the event.', 'error');
+            return;
+        }
+
+        if (!title || !description || !dateValue || !location || Number.isNaN(capacity) || capacity <= 0) {
+            Utils.showToast('Please complete all event fields correctly.', 'error');
+            return;
+        }
+
+        dateValue = dateValue.replace('T', ' ') + ':00';
+
+        try {
+            const response = await Utils.post(CONFIG.ENDPOINTS.EVENT_CREATE, {
+                club: clubId,
+                title,
+                description,
+                date: dateValue,
+                location,
+                capacity
+            });
+
+            if (response.ok) {
+                Utils.showToast('Event created successfully! 🎉');
+                document.getElementById('admin-create-event-form').reset();
+                this.loadEvents();
+            } else {
+                const error = await response.json();
+                const message = error.detail || error.error || JSON.stringify(error);
+                Utils.showToast(message || 'Error creating event', 'error');
+            }
+        } catch (err) {
+            console.error('Error creating event:', err);
+            Utils.showToast('Error creating event', 'error');
+        }
+    },
+
     async showClubMembers(clubId, clubName) {
         try {
             const res = await Utils.get(CONFIG.ENDPOINTS.CLUB_MEMBERS(clubId));
             const data = await res.json();
             const members = data.results || data;
 
-            const memberList = members.map(m => `
+            const memberList = members.length ? members.map(m => `
                 <div class="card">
-                    <h4>${m.student.username}</h4>
-                    <p>Email: ${m.student.email}</p>
-                    <button onclick="Admin.promoteToClubAdmin(${clubId}, ${m.student.id}, '${m.student.username}')"
-                            class="btn btn-primary btn-sm">
-                        Promote to Club Admin
-                    </button>
+                    <div class="card-body">
+                        <h4>${m.student.username}</h4>
+                        <p>Email: ${m.student.email}</p>
+                        <p>Joined: ${Utils.formatDateTime(m.updated_at)}</p>
+                    </div>
+                    <div class="card-footer">
+                        <button onclick="Admin.promoteToClubAdmin(${clubId}, ${m.student.id}, '${m.student.username}')"
+                                class="btn btn-primary btn-sm">
+                            Promote to Club Admin
+                        </button>
+                    </div>
                 </div>
-            `).join('') || '<p>No approved members yet.</p>';
+            `).join('') : '<p>No approved members yet.</p>';
 
-            alert(`Members of ${clubName}:\n\n` + members.map(m => `- ${m.student.username}`).join('\n') || 'No members');
+            const modal = document.getElementById('club-members-modal');
+            const listContainer = document.getElementById('club-members-list');
+            if (listContainer) {
+                listContainer.innerHTML = memberList;
+            }
+            if (modal) {
+                modal.style.display = 'flex';
+            }
         } catch (err) {
             Utils.showToast('Error loading members', 'error');
+        }
+    },
+
+    closeClubMembersModal() {
+        const modal = document.getElementById('club-members-modal');
+        if (modal) {
+            modal.style.display = 'none';
         }
     },
 
@@ -275,6 +358,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form) {
         form.addEventListener('submit', function(e) {
             Admin.createClub(e);
+        });
+    }
+
+    const eventForm = document.getElementById('admin-create-event-form');
+    if (eventForm) {
+        eventForm.addEventListener('submit', function(e) {
+            Admin.createEvent(e);
         });
     }
 });

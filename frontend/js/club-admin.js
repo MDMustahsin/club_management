@@ -15,7 +15,7 @@ const ClubAdmin = {
     },
 
     // 🔹 SECTION SWITCHING
-    showSection(sectionId) {
+    showSection(event, sectionId) {
         document.querySelectorAll('.dashboard-section')
             .forEach(s => s.classList.remove('active'));
 
@@ -25,7 +25,9 @@ const ClubAdmin = {
         document.querySelectorAll('.sidebar-link')
             .forEach(l => l.classList.remove('active'));
 
-        event.target.classList.add('active');
+        if (event && event.target) {
+            event.target.classList.add('active');
+        }
     },
 
     // 🔹 Load clubs user is admin of
@@ -78,9 +80,24 @@ const ClubAdmin = {
         this.loadPendingApplications();
         this.loadClubMembers();
         this.loadClubEvents();
-        
-        // Switch to pending section
-        this.showSection('pending');
+        this.showCreateEventSection();
+
+        const sidebarButton = document.querySelector('.sidebar-link[onclick*="pending"]');
+        this.showSection({ target: sidebarButton }, 'pending');
+    },
+
+    showCreateEventSection() {
+        const section = document.getElementById('create-club-event-section');
+        if (section) {
+            section.style.display = 'block';
+        }
+    },
+
+    hideCreateEventSection() {
+        const section = document.getElementById('create-club-event-section');
+        if (section) {
+            section.style.display = 'none';
+        }
     },
 
     // 🔹 Load pending applications
@@ -288,45 +305,55 @@ const ClubAdmin = {
     async createEvent(e) {
         e.preventDefault();
 
-        const clubId = this.selectedClubId;
-        
-        let dateValue = document.getElementById('event-date').value;
-        if (dateValue) {
-            dateValue = dateValue.replace('T', ' ') + ':00';
+        const title = document.getElementById('club-event-title').value.trim();
+        const description = document.getElementById('club-event-description').value.trim();
+        let dateValue = document.getElementById('club-event-date').value;
+        const location = document.getElementById('club-event-location').value.trim();
+        const capacity = parseInt(document.getElementById('club-event-capacity').value, 10);
+
+        if (!this.selectedClubId) {
+            Utils.showToast('Please select a club to create an event for.', 'error');
+            return;
         }
-        
-        const data = {
-            club: parseInt(clubId),
-            title: document.getElementById('event-title').value,
-            description: document.getElementById('event-description').value,
-            date: dateValue,
-            location: document.getElementById('event-location').value,
-            capacity: parseInt(document.getElementById('event-capacity').value)
-        };
+
+        if (!title || !description || !dateValue || !location || Number.isNaN(capacity) || capacity <= 0) {
+            Utils.showToast('Please complete all event fields correctly.', 'error');
+            return;
+        }
+
+        dateValue = dateValue.replace('T', ' ') + ':00';
 
         try {
-            const response = await fetch(
-                CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.EVENT_CREATE,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                    },
-                    body: JSON.stringify(data)
-                }
-            );
+            const response = await Utils.post(CONFIG.ENDPOINTS.EVENT_CREATE, {
+                club: this.selectedClubId,
+                title,
+                description,
+                date: dateValue,
+                location,
+                capacity
+            });
 
             if (response.ok) {
                 Utils.showToast('Event created successfully! 🎉');
-                document.getElementById('create-event-form').reset();
+                document.getElementById('club-admin-create-event-form').reset();
                 this.loadClubEvents();
             } else {
                 const error = await response.json();
                 Utils.showToast(error.detail || error.error || 'Error creating event', 'error');
             }
         } catch (error) {
+            console.error('Error creating club event:', error);
             Utils.showToast('Error creating event: ' + error.message, 'error');
         }
     }
 };
+
+// Set up event handler for the club admin create event form
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('club-admin-create-event-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            ClubAdmin.createEvent(e);
+        });
+    }
+});

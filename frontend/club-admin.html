@@ -22,19 +22,19 @@
         <div class="sidebar-section">
             <div class="sidebar-label">Club Admin</div>
 
-            <div class="sidebar-link active" onclick="ClubAdmin.showSection('overview')">
+            <div class="sidebar-link active" onclick="ClubAdmin.showSection(event, 'overview')">
                 📊 Overview
             </div>
 
-            <div class="sidebar-link" onclick="ClubAdmin.showSection('pending')">
+            <div class="sidebar-link" onclick="ClubAdmin.showSection(event, 'pending')">
                 🏛️ Pending Applications
             </div>
 
-            <div class="sidebar-link" onclick="ClubAdmin.showSection('members')">
+            <div class="sidebar-link" onclick="ClubAdmin.showSection(event, 'members')">
                 👥 Members
             </div>
 
-            <div class="sidebar-link" onclick="ClubAdmin.showSection('events')">
+            <div class="sidebar-link" onclick="ClubAdmin.showSection(event, 'events')">
                 📅 Events
             </div>
         </div>
@@ -64,6 +64,38 @@
         <!-- Events -->
         <div id="events" class="dashboard-section">
             <h2>Club Events</h2>
+
+            <div id="create-club-event-section" style="display:none; margin-bottom: 24px;">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Create Event for Selected Club</h3>
+                        <form id="club-admin-create-event-form">
+                            <div class="form-group">
+                                <label>Event Title</label>
+                                <input type="text" id="club-event-title" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="club-event-description" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Date & Time</label>
+                                <input type="datetime-local" id="club-event-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Location</label>
+                                <input type="text" id="club-event-location" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Capacity</label>
+                                <input type="number" id="club-event-capacity" min="1" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Event</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <div id="club-events-list" class="grid-3"></div>
         </div>
 

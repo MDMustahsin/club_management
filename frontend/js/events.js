@@ -14,8 +14,14 @@ const Events = {
 
         try {
             const response = await Utils.get(CONFIG.ENDPOINTS.EVENTS);
-            const data = await response.json();
+            if (!response.ok) {
+                const error = await response.text();
+                console.error('Event load failed:', response.status, error);
+                Utils.showError('events-grid', 'Failed to load events.');
+                return;
+            }
 
+            const data = await response.json();
             const events = data.results || data;
 
             if (!events.length) {
@@ -132,13 +138,25 @@ const Events = {
             dateValue = dateValue.replace('T', ' ') + ':00';
         }
         
+        const clubValue = parseInt(clubId, 10);
+        const capacityValue = parseInt(document.getElementById('event-capacity').value, 10);
+
+        if (!clubValue || Number.isNaN(clubValue)) {
+            Utils.showToast('Please select a club', 'error');
+            return;
+        }
+        if (!capacityValue || Number.isNaN(capacityValue) || capacityValue <= 0) {
+            Utils.showToast('Please enter a valid capacity greater than 0', 'error');
+            return;
+        }
+
         const data = {
-            club: parseInt(clubId),
+            club: clubValue,
             title: document.getElementById('event-title').value,
             description: document.getElementById('event-description').value,
             date: dateValue,
             location: document.getElementById('event-location').value,
-            capacity: parseInt(document.getElementById('event-capacity').value)
+            capacity: capacityValue
         };
 
         try {

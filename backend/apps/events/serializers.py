@@ -30,11 +30,25 @@ class EventCreateSerializer(BaseSerializer):
         return value
 
     def validate(self, data):
-        if data.get('capacity', 0) <= 0:
+        capacity = data.get('capacity')
+        if capacity is None:
             raise serializers.ValidationError(
-                'Capacity must be greater than 0'
+                {'capacity': 'Capacity is required.'}
+            )
+        if capacity <= 0:
+            raise serializers.ValidationError(
+                {'capacity': 'Capacity must be greater than 0.'}
             )
         return data
+
+    def validate_date(self, value):
+        from django.utils import timezone
+
+        if value <= timezone.now():
+            raise serializers.ValidationError(
+                'Event date must be in the future.'
+            )
+        return value
 
     def create(self, validated_data):
         """Set created_by to current user"""
