@@ -53,6 +53,13 @@ const Auth = {
     },
 
     /**
+     * Check if current user is club admin
+     */
+    isClubAdmin() {
+        return this.getRole() === 'CLUB_ADMIN';
+    },
+
+    /**
      * Redirect to login if not logged in
      */
     requireLogin() {

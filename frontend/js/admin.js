@@ -113,6 +113,14 @@ const Admin = {
         container.innerHTML = clubs.map(c => `
             <div class="card">
                 <h4>${c.name}</h4>
+                <p>${Utils.truncate(c.description, 60)}</p>
+                <p>👤 Admin: ${c.admin ? c.admin.username : 'None'}</p>
+                <p>👥 Members: ${c.member_count || 0}</p>
+                
+                <button onclick="Admin.showClubMembers(${c.id}, '${c.name}')"
+                        class="btn btn-info btn-sm">
+                    View Members
+                </button>
 
                 <button onclick="Admin.deleteClub(${c.id})"
                         class="btn btn-danger btn-sm">
@@ -120,6 +128,51 @@ const Admin = {
                 </button>
             </div>
         `).join('');
+    },
+
+    async showClubMembers(clubId, clubName) {
+        try {
+            const res = await Utils.get(CONFIG.ENDPOINTS.CLUB_MEMBERS(clubId));
+            const data = await res.json();
+            const members = data.results || data;
+
+            const memberList = members.map(m => `
+                <div class="card">
+                    <h4>${m.student.username}</h4>
+                    <p>Email: ${m.student.email}</p>
+                    <button onclick="Admin.promoteToClubAdmin(${clubId}, ${m.student.id}, '${m.student.username}')"
+                            class="btn btn-primary btn-sm">
+                        Promote to Club Admin
+                    </button>
+                </div>
+            `).join('') || '<p>No approved members yet.</p>';
+
+            alert(`Members of ${clubName}:\n\n` + members.map(m => `- ${m.student.username}`).join('\n') || 'No members');
+        } catch (err) {
+            Utils.showToast('Error loading members', 'error');
+        }
+    },
+
+    async promoteToClubAdmin(clubId, userId, username) {
+        if (!confirm(`Are you sure you want to promote ${username} to be the admin of this club?`)) {
+            return;
+        }
+
+        try {
+            const res = await Utils.post(CONFIG.ENDPOINTS.CLUB_PROMOTE(clubId), {
+                user_id: userId
+            });
+
+            if (res.ok) {
+                Utils.showToast(`${username} is now the club admin! 🎉`);
+                this.loadClubs();
+            } else {
+                const error = await res.json();
+                Utils.showToast(error.error || 'Error promoting user', 'error');
+            }
+        } catch (err) {
+            Utils.showToast('Something went wrong', 'error');
+        }
     },
 
     async deleteClub(id) {

@@ -163,7 +163,9 @@ const Utils = {
             'FAILED':    '<span class="badge badge-danger">❌ Failed</span>',
             'REFUNDED':  '<span class="badge badge-warning">↩ Refunded</span>',
             'ADMIN':     '<span class="badge badge-purple">👑 Admin</span>',
+            'CLUB_ADMIN': '<span class="badge badge-info">🏛️ Club Admin</span>',
             'MEMBER':    '<span class="badge badge-info">👤 Member</span>',
+            'STUDENT':   '<span class="badge badge-secondary">🎓 Student</span>',
         };
         return badges[status] || `<span class="badge">${status}</span>`;
     },

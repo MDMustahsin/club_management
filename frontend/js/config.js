@@ -20,6 +20,8 @@ const CONFIG = {
         CLUB_UPDATE: (id) => `/clubs/${id}/update/`,
         CLUB_DELETE: (id) => `/clubs/${id}/delete/`,
         CLUB_RESTORE: (id) => `/clubs/${id}/restore/`,
+        CLUB_PROMOTE: (id) => `/clubs/${id}/promote/`,
+        CLUB_MEMBERS: (id) => `/memberships/club/${id}/members/`,
 
         // Memberships
         MEMBERSHIP_APPLY: '/memberships/apply/',

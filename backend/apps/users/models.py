@@ -35,7 +35,9 @@ class CustomUser(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     """
     ROLE_CHOICES = (
         ('ADMIN', 'Admin'),
+        ('CLUB_ADMIN', 'Club Admin'),
         ('MEMBER', 'Member'),
+        ('STUDENT', 'Student'),
     )
 
     username = models.CharField(max_length=150, unique=True)
@@ -66,6 +68,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     def is_admin(self):
         """Encapsulated role check — hides implementation detail"""
         return self.role == 'ADMIN'
+
+    def is_club_admin(self):
+        """Encapsulated role check — club admin"""
+        return self.role == 'CLUB_ADMIN'
 
     def is_member(self):
         """Encapsulated role check — hides implementation detail"""

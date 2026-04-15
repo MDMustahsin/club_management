@@ -1,6 +1,7 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
 from .models import Club
 from .serializers import (
     ClubSerializer,
@@ -133,5 +134,59 @@ class ClubRestoreView(generics.UpdateAPIView):
         club.restore()
         return Response({
             'message': f'Club "{club.name}" has been restored.',
+            'club': ClubSerializer(club).data
+        })
+
+
+class PromoteToClubAdminView(APIView):
+    """
+    OOP Principle: Encapsulation
+    POST /api/clubs/<club_id>/promote/ — admin only
+    Promotes an approved member to be club admin
+    """
+    permission_classes = [IsAdminRole]
+
+    def post(self, request, club_id):
+        user_id = request.data.get('user_id')
+        
+        if not user_id:
+            return Response(
+                {'error': 'User ID is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            club = Club.objects.get(id=club_id)
+        except Club.DoesNotExist:
+            return Response(
+                {'error': 'Club not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            from apps.memberships.models import Membership
+            membership = Membership.objects.get(
+                club=club,
+                student_id=user_id,
+                status='APPROVED'
+            )
+        except Membership.DoesNotExist:
+            return Response(
+                {'error': 'User is not an approved member of this club'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Update the club's admin
+        club.admin = membership.student
+        club.save()
+
+        # Update user's role to CLUB_ADMIN if not already
+        user = membership.student
+        if user.role != 'ADMIN':
+            user.role = 'CLUB_ADMIN'
+            user.save()
+
+        return Response({
+            'message': f'{user.username} is now the admin of {club.name}',
             'club': ClubSerializer(club).data
         })
