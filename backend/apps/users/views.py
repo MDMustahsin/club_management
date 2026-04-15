@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
+from rest_framework.decorators import api_view
+from django.contrib.auth import get_user_model, authenticate
 from .models import CustomUser
 from .serializers import (
     UserSerializer,
@@ -13,6 +14,18 @@ from .serializers import (
 )
 from api.permissions.base_permissions import IsAdminRole
 
+User = get_user_model()
+
+@api_view(['GET'])
+def create_admin(request):
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='admin@gmail.com',
+            password='admin123'
+        )
+        return Response({'message': 'Admin created'})
+    return Response({'message': 'Admin already exists'})
 
 class RegisterView(generics.CreateAPIView):
     """
