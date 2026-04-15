@@ -82,11 +82,15 @@ const Auth = {
      * Register new user
      */
     async register(data) {
-        const response = await Utils.post(
+        return await Utils.post(
             CONFIG.ENDPOINTS.REGISTER,
-            data
+            {
+                username: data.username,
+                email: data.email,
+                password: data.password,
+                confirm_password: data.confirm_password
+            }
         );
-        return response;
     },
 
     /**

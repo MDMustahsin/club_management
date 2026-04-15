@@ -17,10 +17,10 @@
 <div class="auth-card">
 
     <!-- 🔹 Logo -->
-    <div class="auth-logo">
-        <h1>🎓 Club<span>Hub</span></h1>
-        <p>Create your account</p>
-    </div>
+   <a href="index.html" class="auth-logo">
+    <h1>🎓 Club<span>Hub</span></h1>
+    <p>Create your account</p>
+</a>
 
     <!-- 🔹 FORM -->
     <form id="registerForm">
@@ -37,7 +37,12 @@
 
         <div class="form-group">
             <label>Password</label>
-            <input type="password" id="password" required>
+            <input type="password" id="password" minlength="8" required>
+        </div>
+
+        <div class="form-group">
+            <label>Confirm Password</label>
+            <input type="password" id="confirm_password" minlength="8" required>
         </div>
 
         <button class="btn btn-primary btn-full">
@@ -63,10 +68,20 @@
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    const password = document.getElementById('password').value;
+    const confirm_password = document.getElementById('confirm_password').value;
+
+    // Client-side validation
+    if (password !== confirm_password) {
+        Utils.showToast('Passwords do not match!', 'error');
+        return;
+    }
+
     const data = {
         username: document.getElementById('username').value,
         email: document.getElementById('email').value,
-        password: document.getElementById('password').value
+        password: password,
+        confirm_password: confirm_password
     };
 
     try {
@@ -77,7 +92,9 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
             Utils.redirect('login.html');
         } else {
             const error = await response.json();
-            Utils.showToast(error.detail || 'Error', 'error');
+            // Handle validation errors
+            const errorMsg = error.detail || Object.values(error).flat().join(', ') || 'Error';
+            Utils.showToast(errorMsg, 'error');
         }
 
     } catch (err) {

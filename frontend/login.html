@@ -13,10 +13,10 @@
 
 <div class="auth-card">
 
-    <div class="auth-logo">
-        <h1>🎓 Club<span>Hub</span></h1>
-        <p>Login to your account</p>
-    </div>
+   <a href="index.html" class="auth-logo">
+    <h1>🎓 Club<span>Hub</span></h1>
+    <p>Create your account</p>
+</a>
 
     <form id="loginForm">
 
@@ -39,5 +39,34 @@
     </div>
 
 </div>
+
+<!-- JS -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const result = await Auth.login(email, password);
+
+        if (result.success) {
+            Utils.showToast('Login successful! 🎉');
+            Utils.redirect('dashboard.html');
+        } else {
+            Utils.showToast(result.error.detail || 'Invalid email or password', 'error');
+        }
+
+    } catch (err) {
+        Utils.showToast('Something went wrong', 'error');
+    }
+});
+</script>
+
 </body>
 </html>

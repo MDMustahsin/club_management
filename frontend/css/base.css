@@ -289,3 +289,10 @@ tbody tr:last-child td { border-bottom: none; }
 @media (max-width: 480px) {
     .grid-4 { grid-template-columns: 1fr; }
 }
+
+.auth-logo {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    cursor: pointer;
+}

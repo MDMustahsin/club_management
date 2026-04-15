@@ -71,14 +71,12 @@ class RegisterSerializer(BaseSerializer):
         return data
 
     def create(self, validated_data):
-        """Encapsulated user creation logic"""
-        validated_data.pop('confirm_password')
-        user = CustomUser.objects.create_user(
-            email=validated_data['email'],
-            username=validated_data['username'],
-            password=validated_data['password'],
-            phone_number=validated_data.get('phone_number', '')
-        )
+        email = validated_data.get('email')
+
+        # 🔥 KEY FIX
+        validated_data['username'] = email  
+
+        user = CustomUser.objects.create_user(**validated_data)
         return user
 
 
