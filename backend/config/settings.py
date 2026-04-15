@@ -73,10 +73,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 DATABASES = {
     'default': dj_database_url.parse(
-        config(
-            'DATABASE_URL',
-            default='postgres://postgres:1234@localhost:5432/club_db'
-        )
+        config('DATABASE_URL')
     )
 }
 
