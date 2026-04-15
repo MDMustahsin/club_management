@@ -4,7 +4,7 @@
  * Change API_BASE_URL here when deploying to Railway
  */
 const CONFIG = {
-    API_BASE_URL: 'https://club-management-e91v.onrender.com/api',
+    API_BASE_URL: 'http://127.0.0.1:8000/api',
     ENDPOINTS: {
         // Auth
         REGISTER: '/auth/register/',
