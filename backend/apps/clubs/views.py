@@ -8,7 +8,7 @@ from .serializers import (
     ClubCreateSerializer,
     ClubUpdateSerializer
 )
-from api.permissions.base_permissions import IsAdminRole, IsAdminOrReadOnly
+from api.permissions.base_permissions import IsAdminRole, IsAdminOrReadOnly, IsAdminOrClubAdmin
 
 
 class ClubListView(generics.ListAPIView):
@@ -141,10 +141,10 @@ class ClubRestoreView(generics.UpdateAPIView):
 class PromoteToClubAdminView(APIView):
     """
     OOP Principle: Encapsulation
-    POST /api/clubs/<club_id>/promote/ — admin only
+    POST /api/clubs/<club_id>/promote/ — admin or club admin
     Promotes an approved member to be club admin
     """
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsAdminOrClubAdmin]
 
     def post(self, request, club_id):
         user_id = request.data.get('user_id')
@@ -162,6 +162,14 @@ class PromoteToClubAdminView(APIView):
                 {'error': 'Club not found'},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+        # Club admins can only promote members of their own club
+        if request.user.role == 'CLUB_ADMIN':
+            if club.admin != request.user:
+                return Response(
+                    {'error': 'You can only promote members of your own club.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
         try:
             from apps.memberships.models import Membership

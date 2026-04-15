@@ -16,6 +16,11 @@ class EventListView(generics.ListAPIView):
     serializer_class = EventSerializer
 
 
+class EventDetailView(generics.RetrieveAPIView):
+    queryset = Event.objects.filter(is_active=True)
+    serializer_class = EventSerializer
+
+
 class EventCreateView(generics.CreateAPIView):
     serializer_class = EventCreateSerializer
     permission_classes = [IsAdminOrClubAdmin]
@@ -29,7 +34,6 @@ class EventCreateView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        # If club admin, validate they can create for this club
         if request.user.role == 'CLUB_ADMIN':
             club = serializer.validated_data.get('club')
             if club.admin != request.user:
@@ -43,6 +47,56 @@ class EventCreateView(generics.CreateAPIView):
             'message': f'Event "{event.title}" created successfully.',
             'event': EventSerializer(event).data
         }, status=status.HTTP_201_CREATED)
+
+
+class EventUpdateView(generics.UpdateAPIView):
+    queryset = Event.objects.filter(is_active=True)
+    serializer_class = EventCreateSerializer
+    permission_classes = [IsAdminOrClubAdmin]
+    http_method_names = ['patch']
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if request.user.role == 'CLUB_ADMIN':
+            if instance.club.admin != request.user:
+                return Response(
+                    {'error': 'You can only update events for your club.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        event = serializer.save()
+        return Response({
+            'message': f'Event "{event.title}" updated successfully.',
+            'event': EventSerializer(event).data
+        })
+
+
+class EventDeleteView(generics.DestroyAPIView):
+    queryset = Event.objects.filter(is_active=True)
+    permission_classes = [IsAdminOrClubAdmin]
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        if request.user.role == 'CLUB_ADMIN':
+            if instance.club.admin != request.user:
+                return Response(
+                    {'error': 'You can only delete events for your club.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        
+        instance.soft_delete()
+        return Response({
+            'message': f'Event "{instance.title}" has been deleted.'
+        }, status=status.HTTP_200_OK)
 
 
 class RegisterEventView(generics.CreateAPIView):

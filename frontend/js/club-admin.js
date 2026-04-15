@@ -174,6 +174,9 @@ const ClubAdmin = {
                 return;
             }
 
+            const user = Auth.getUser();
+            const isClubAdminOfThisClub = this.myClubs.some(c => c.id === this.selectedClubId);
+
             container.innerHTML = members.map(m => `
                 <div class="card">
                     <div class="card-body">
@@ -181,11 +184,41 @@ const ClubAdmin = {
                         <p>Email: ${m.student.email}</p>
                         <p>Joined: ${Utils.formatDateTime(m.updated_at)}</p>
                     </div>
+                    ${isClubAdminOfThisClub && m.student.id !== user.id ? `
+                    <div class="card-footer">
+                        <button onclick="ClubAdmin.promoteMember(${this.selectedClubId}, ${m.student.id}, '${m.student.username}')" class="btn btn-primary btn-sm">
+                            Promote to Club Admin
+                        </button>
+                    </div>
+                    ` : ''}
                 </div>
             `).join('');
 
         } catch (error) {
             console.error('Error loading members:', error);
+        }
+    },
+
+    // 🔹 Promote member to club admin
+    async promoteMember(clubId, userId, username) {
+        if (!confirm(`Are you sure you want to promote ${username} to be the admin of this club?`)) {
+            return;
+        }
+
+        try {
+            const res = await Utils.post(CONFIG.ENDPOINTS.CLUB_PROMOTE(clubId), {
+                user_id: userId
+            });
+
+            if (res.ok) {
+                Utils.showToast(`${username} is now the club admin! 🎉`);
+                this.loadClubMembers();
+            } else {
+                const error = await res.json();
+                Utils.showToast(error.error || 'Error promoting user', 'error');
+            }
+        } catch (err) {
+            Utils.showToast('Something went wrong', 'error');
         }
     },
 
@@ -205,6 +238,8 @@ const ClubAdmin = {
                 return;
             }
 
+            const isClubAdminOfThisClub = this.myClubs.some(c => c.id === this.selectedClubId);
+
             container.innerHTML = events.map(e => `
                 <div class="card">
                     <div class="card-body">
@@ -213,11 +248,85 @@ const ClubAdmin = {
                         <p>📍 ${e.location}</p>
                         ${Utils.getStatusBadge(e.is_active ? 'UPCOMING' : 'COMPLETED')}
                     </div>
+                    ${isClubAdminOfThisClub ? `
+                    <div class="card-footer">
+                        <button onclick="ClubAdmin.deleteEvent(${e.id})" class="btn btn-danger btn-sm">
+                            Delete Event
+                        </button>
+                    </div>
+                    ` : ''}
                 </div>
             `).join('');
 
         } catch (error) {
             console.error('Error loading events:', error);
+        }
+    },
+
+    // 🔹 Delete event
+    async deleteEvent(eventId) {
+        if (!confirm('Are you sure you want to delete this event?')) {
+            return;
+        }
+
+        try {
+            const res = await Utils.delete(CONFIG.ENDPOINTS.EVENT_DELETE(eventId));
+
+            if (res.ok) {
+                Utils.showToast('Event deleted! 🎉');
+                this.loadClubEvents();
+            } else {
+                const error = await res.json();
+                Utils.showToast(error.error || 'Error deleting event', 'error');
+            }
+        } catch (err) {
+            Utils.showToast('Something went wrong', 'error');
+        }
+    },
+
+    // 🔹 Create event
+    async createEvent(e) {
+        e.preventDefault();
+
+        const clubId = this.selectedClubId;
+        
+        let dateValue = document.getElementById('event-date').value;
+        if (dateValue) {
+            dateValue = dateValue.replace('T', ' ') + ':00';
+        }
+        
+        const data = {
+            club: parseInt(clubId),
+            title: document.getElementById('event-title').value,
+            description: document.getElementById('event-description').value,
+            date: dateValue,
+            location: document.getElementById('event-location').value,
+            capacity: parseInt(document.getElementById('event-capacity').value)
+        };
+
+        try {
+            const response = await fetch(
+                CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.EVENT_CREATE,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                    },
+                    body: JSON.stringify(data)
+                }
+            );
+
+            if (response.ok) {
+                Utils.showToast('Event created successfully! 🎉');
+                document.getElementById('create-event-form').reset();
+                this.loadClubEvents();
+            } else {
+                const error = await response.json();
+                Utils.showToast(error.detail || error.error || 'Error creating event', 'error');
+            }
+        } catch (error) {
+            Utils.showToast('Error creating event: ' + error.message, 'error');
         }
     }
 };

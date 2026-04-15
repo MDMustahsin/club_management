@@ -144,7 +144,7 @@ const ClubDetail = {
             const data = await response.json();
 
             const events = (data.results || data)
-                .filter(e => e.club === parseInt(this.clubId));
+                .filter(e => e.club && e.club.id === parseInt(this.clubId));
 
             const container = document.getElementById('events-list');
 
