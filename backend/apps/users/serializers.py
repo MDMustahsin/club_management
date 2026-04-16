@@ -68,11 +68,15 @@ class RegisterSerializer(BaseSerializer):
         return data
 
     def create(self, validated_data):
-        email = validated_data.get('email')
-        username = validated_data.pop('username', email)
-        password = validated_data.pop('password')
+        email = validated_data['email']
+        username = validated_data.get('username', email)
+        password = validated_data['password']
+
+        # Remove fields that are handled separately
+        validated_data.pop('email', None)
+        validated_data.pop('username', None)
+        validated_data.pop('password', None)
         validated_data.pop('confirm_password', None)
-        validated_data['username'] = username
 
         user = CustomUser.objects.create_user(
             email=email,
