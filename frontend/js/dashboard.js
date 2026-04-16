@@ -7,7 +7,6 @@ const Dashboard = {
         if (this.isManager()) {
             document.getElementById('clubs-link').style.display = 'block';
             document.getElementById('stat-clubs-card').style.display = 'block';
-            document.getElementById('clubs').style.display = 'block';
         }
 
         this.loadAll();
