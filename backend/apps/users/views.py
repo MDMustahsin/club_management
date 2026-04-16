@@ -65,13 +65,6 @@ class LoginView(APIView):
     POST /api/auth/login/
     """
     permission_classes = [AllowAny]
-    
-    def create(self, validated_data):
-        email = validated_data.get('email')
-        validated_data['username'] = email   # 🔥 KEY FIX
-
-        user = CustomUser.objects.create_user(**validated_data)
-        return user
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)

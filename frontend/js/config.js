@@ -1,10 +1,13 @@
 /**
  * Global API Configuration
  * OOP: Single source of truth for all API settings
- * Change API_BASE_URL here when deploying to Railway
+ * Automatically detects environment (local vs production)
  */
 const CONFIG = {
-    API_BASE_URL: 'http://127.0.0.1:8000/api',
+    // Detect if running locally or on production
+    API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://127.0.0.1:8000/api'
+        : 'https://club-management-api.onrender.com/api', // 🔥 UPDATE THIS WITH YOUR RENDER URL
     ENDPOINTS: {
         // Auth
         REGISTER: '/auth/register/',

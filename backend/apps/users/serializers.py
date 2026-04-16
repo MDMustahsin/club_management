@@ -36,7 +36,7 @@ class RegisterSerializer(BaseSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            'id', 'email', 'username',
+            'id', 'email',
             'password', 'confirm_password',
             'phone_number'
         )
@@ -50,18 +50,6 @@ class RegisterSerializer(BaseSerializer):
             )
         return value.lower()
 
-    def validate_username(self, value):
-        """Encapsulated username validation"""
-        if CustomUser.objects.filter(username=value).exists():
-            raise serializers.ValidationError(
-                'This username is already taken.'
-            )
-        if len(value) < 3:
-            raise serializers.ValidationError(
-                'Username must be at least 3 characters.'
-            )
-        return value
-
     def validate(self, data):
         """Encapsulated cross-field validation"""
         if data.get('password') != data.get('confirm_password'):
@@ -72,11 +60,16 @@ class RegisterSerializer(BaseSerializer):
 
     def create(self, validated_data):
         email = validated_data.get('email')
-
-        # 🔥 KEY FIX
+        password = validated_data.pop('password')
+        validated_data.pop('confirm_password', None)  # 🔥 CRITICAL FIX: Remove confirm_password
         validated_data['username'] = email  
 
-        user = CustomUser.objects.create_user(**validated_data)
+        user = CustomUser.objects.create_user(
+            email=email,
+            username=email,
+            password=password,
+            **validated_data
+        )
         return user
 
 
