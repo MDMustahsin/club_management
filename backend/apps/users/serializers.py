@@ -54,7 +54,7 @@ class RegisterSerializer(BaseSerializer):
         """Encapsulated username validation"""
         if not value.strip():
             raise serializers.ValidationError('Username cannot be empty.')
-        if CustomUser.objects.filter(username=value).exists():
+        if CustomUser.objects.filter(username__iexact=value).exists():
             raise serializers.ValidationError(
                 'A user with this username already exists.'
             )
