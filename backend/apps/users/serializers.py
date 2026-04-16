@@ -50,6 +50,14 @@ class RegisterSerializer(BaseSerializer):
             )
         return value.lower()
 
+    def validate_username(self, value):
+        """Encapsulated username validation"""
+        if CustomUser.objects.filter(username=value).exists():
+            raise serializers.ValidationError(
+                'A user with this username already exists.'
+            )
+        return value
+
     def validate(self, data):
         """Encapsulated cross-field validation"""
         if data.get('password') != data.get('confirm_password'):

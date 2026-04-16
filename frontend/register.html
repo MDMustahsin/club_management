@@ -91,9 +91,13 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
             Utils.showToast('Registered successfully 🎉');
             Utils.redirect('login.html');
         } else {
-            const error = await response.json();
-            // Handle validation errors
-            const errorMsg = error.detail || Object.values(error).flat().join(', ') || 'Error';
+            let errorMsg = 'Error';
+            try {
+                const error = await response.json();
+                errorMsg = error.detail || Object.values(error).flat().join(', ') || 'Error';
+            } catch (jsonErr) {
+                errorMsg = `Server error (${response.status})`;
+            }
             Utils.showToast(errorMsg, 'error');
         }
 
