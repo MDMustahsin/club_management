@@ -36,7 +36,7 @@ class RegisterSerializer(BaseSerializer):
     class Meta:
         model = CustomUser
         fields = (
-            'id', 'email',
+            'id', 'email', 'username',
             'password', 'confirm_password',
             'phone_number'
         )
@@ -60,13 +60,14 @@ class RegisterSerializer(BaseSerializer):
 
     def create(self, validated_data):
         email = validated_data.get('email')
+        username = validated_data.pop('username', email)
         password = validated_data.pop('password')
-        validated_data.pop('confirm_password', None)  # 🔥 CRITICAL FIX: Remove confirm_password
-        validated_data['username'] = email  
+        validated_data.pop('confirm_password', None)
+        validated_data['username'] = username
 
         user = CustomUser.objects.create_user(
             email=email,
-            username=email,
+            username=username,
             password=password,
             **validated_data
         )

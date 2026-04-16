@@ -1,13 +1,13 @@
 from rest_framework import generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from .models import Donation
 from .serializers import (
     DonationSerializer,
     DonationCreateSerializer,
     DonationStatusSerializer
 )
-from api.permissions.base_permissions import IsAdminRole
+from api.permissions.base_permissions import IsAdminRole, IsAdminOrClubAdmin
 
 
 class CreateDonationView(generics.CreateAPIView):
@@ -16,7 +16,7 @@ class CreateDonationView(generics.CreateAPIView):
     """
 
     serializer_class = DonationCreateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get_serializer_context(self):
         return {'request': self.request}
@@ -57,14 +57,18 @@ class MyDonationsView(generics.ListAPIView):
 
 class AllDonationsView(generics.ListAPIView):
     """
-    Admin: View all donations
+    Admin or club admin: View donations
     """
 
     serializer_class = DonationSerializer
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsAdminOrClubAdmin]
 
     def get_queryset(self):
-        queryset = Donation.objects.all()
+        user = self.request.user
+        if user.role == 'ADMIN':
+            queryset = Donation.objects.all()
+        else:
+            queryset = Donation.objects.filter(club__admin=user)
 
         club_id = self.request.query_params.get('club')
         status_filter = self.request.query_params.get('status')

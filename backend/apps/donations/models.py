@@ -22,7 +22,9 @@ class Donation(TimeStampedModel):
     donor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='donations'
+        related_name='donations',
+        blank=True,
+        null=True
     )
 
     club = models.ForeignKey(

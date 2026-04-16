@@ -10,7 +10,7 @@ class DonationSerializer(BaseSerializer):
     OOP: Read-only serializer with nested data
     """
 
-    donor = UserSerializer(read_only=True)
+    donor = UserSerializer(read_only=True, allow_null=True)
     club = ClubSerializer(read_only=True)
     status_display = serializers.SerializerMethodField()
 
@@ -55,6 +55,8 @@ class DonationCreateSerializer(BaseSerializer):
 
     def create(self, validated_data):
         user = self.get_requesting_user()
+        if not user or not getattr(user, 'is_authenticated', False):
+            user = None
 
         return Donation.objects.create(
             donor=user,
