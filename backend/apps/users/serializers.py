@@ -37,8 +37,7 @@ class RegisterSerializer(BaseSerializer):
         model = CustomUser
         fields = (
             'id', 'email', 'username',
-            'password', 'confirm_password',
-            'phone_number'
+            'password', 'confirm_password'
         )
         read_only_fields = ('id',)
 
