@@ -6,6 +6,10 @@ const Dashboard = {
         this.loadAll();
     },
 
+    isManager() {
+        return Auth.isAdmin() || Auth.isClubAdmin();
+    },
+
     // 🔹 SECTION SWITCHING
     showSection(sectionId) {
 
@@ -70,53 +74,150 @@ const Dashboard = {
     // 🔹 EVENTS
     async loadEvents() {
         try {
-            const response = await Utils.get(CONFIG.ENDPOINTS.EVENT_MY_REGISTRATIONS);
+            const endpoint = this.isManager()
+                ? CONFIG.ENDPOINTS.EVENTS
+                : CONFIG.ENDPOINTS.EVENT_MY_REGISTRATIONS;
+            const response = await Utils.get(endpoint);
             const data = await response.json();
-            const events = data.results || data;
+            let events = data.results || data;
+
+            const user = Auth.getUser();
+            if (Auth.isClubAdmin()) {
+                events = events.filter(event => event.club?.admin?.id === user.id);
+            }
 
             document.getElementById('stat-events').innerText = events.length;
+            document.querySelector('#events h2').textContent = this.isManager() ? 'Manage Events' : 'My Events';
 
             const container = document.getElementById('events-list');
 
             if (!events.length) {
-                Utils.showEmpty('events-list');
+                Utils.showEmpty('events-list', 'No events found.');
                 return;
             }
 
-            container.innerHTML = events.map(e => `
+            this.events = events;
+
+            container.innerHTML = events.map(event => {
+                const canManage = Auth.isAdmin() || (
+                    Auth.isClubAdmin() && event.club?.admin?.id === user.id
+                );
+
+                return `
                 <div class="card">
                     <div class="card-body">
-                        <h4>${e.event.title}</h4>
-                        <p>${Utils.formatDateTime(e.event.date)}</p>
+                        <h4>${event.title}</h4>
+                        <p>${Utils.formatDateTime(event.date)}</p>
+                        <p>📍 ${event.location}</p>
+                        <p>🏛️ ${event.club?.name || 'N/A'}</p>
+                        ${Utils.getStatusBadge(event.is_active ? 'UPCOMING' : 'COMPLETED')}
                     </div>
-
                     <div class="card-footer">
-                        <button onclick="Dashboard.cancelEvent(${e.id})"
-                                class="btn btn-danger btn-sm">
-                            Cancel
-                        </button>
+                        ${canManage ? `
+                            <button onclick="Dashboard.editEvent(${event.id})" class="btn btn-outline-primary btn-sm">Edit</button>
+                            <button onclick="Dashboard.deleteEvent(${event.id})" class="btn btn-danger btn-sm">Delete</button>
+                        ` : `
+                            <button onclick="Dashboard.cancelEvent(${event.id})" class="btn btn-primary btn-sm">Cancel</button>
+                        `}
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
-        } catch {
-            Utils.showError('events-list');
+        } catch (error) {
+            console.error('Dashboard events load error:', error);
+            Utils.showError('events-list', 'Failed to load events.');
+        }
+    },
+
+    async editEvent(eventId) {
+        const event = this.events?.find(e => e.id === eventId);
+        if (!event) {
+            Utils.showToast('Event not found', 'error');
+            return;
+        }
+
+        const title = prompt('Title', event.title);
+        if (title === null) return;
+
+        const description = prompt('Description', event.description);
+        if (description === null) return;
+
+        const date = prompt('Date & time (YYYY-MM-DDTHH:MM)', event.date ? event.date.replace(' ', 'T').slice(0, 16) : '');
+        if (date === null) return;
+
+        const location = prompt('Location', event.location);
+        if (location === null) return;
+
+        const capacityRaw = prompt('Capacity', event.capacity);
+        if (capacityRaw === null) return;
+        const capacity = parseInt(capacityRaw, 10);
+        if (Number.isNaN(capacity) || capacity <= 0) {
+            Utils.showToast('Invalid capacity', 'error');
+            return;
+        }
+
+        const payload = {
+            title,
+            description,
+            date: date.replace('T', ' '),
+            location,
+            capacity
+        };
+
+        try {
+            const response = await Utils.patch(
+                CONFIG.ENDPOINTS.EVENT_UPDATE(eventId),
+                payload
+            );
+            const result = await response.json();
+            if (!response.ok) {
+                Utils.showToast(result.detail || result.error || 'Update failed', 'error');
+                return;
+            }
+            Utils.showToast('Event updated successfully');
+            this.loadEvents();
+        } catch (error) {
+            console.error('Update event error:', error);
+            Utils.showToast('Failed to update event', 'error');
+        }
+    },
+
+    async deleteEvent(eventId) {
+        if (!confirm('Delete this event?')) return;
+
+        try {
+            const response = await Utils.delete(CONFIG.ENDPOINTS.EVENT_DELETE(eventId));
+            const result = await response.json();
+            if (!response.ok) {
+                Utils.showToast(result.detail || result.error || 'Delete failed', 'error');
+                return;
+            }
+            Utils.showToast(result.message || 'Event deleted');
+            this.loadEvents();
+        } catch (error) {
+            console.error('Delete event error:', error);
+            Utils.showToast('Failed to delete event', 'error');
         }
     },
 
     // 🔹 DONATIONS
     async loadDonations() {
         try {
-            const response = await Utils.get(CONFIG.ENDPOINTS.DONATION_MY);
+            const endpoint = this.isManager()
+                ? CONFIG.ENDPOINTS.DONATION_ALL
+                : CONFIG.ENDPOINTS.DONATION_MY;
+            const response = await Utils.get(endpoint);
             const data = await response.json();
             const donations = data.results || data;
 
             document.getElementById('stat-donations').innerText = donations.length;
+            document.querySelector('#donations h2').textContent = this.isManager() ? 'Donations' : 'My Donations';
 
             const container = document.getElementById('donations-list');
 
             if (!donations.length) {
-                Utils.showEmpty('donations-list');
+                Utils.showEmpty('donations-list', 'No donations found.');
                 return;
             }
 
@@ -125,13 +226,20 @@ const Dashboard = {
                     <div class="card-body">
                         <h4>${d.club.name}</h4>
                         <p>💰 ${d.amount}</p>
+                        ${donorBadge(d.donor)}
                         ${Utils.getStatusBadge(d.status)}
                     </div>
                 </div>
             `).join('');
 
-        } catch {
-            Utils.showError('donations-list');
+            function donorBadge(donor) {
+                if (!donor) return '<p><em>Anonymous donor</em></p>';
+                return `<p>Donor: ${donor.username || donor.email}</p>`;
+            }
+
+        } catch (error) {
+            console.error('Dashboard donations load error:', error);
+            Utils.showError('donations-list', 'Failed to load donations.');
         }
     },
 

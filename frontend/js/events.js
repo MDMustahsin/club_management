@@ -6,7 +6,22 @@ const Events = {
         // Load clubs for create event form if admin/club admin
         if (Auth.isAdmin() || Auth.isClubAdmin()) {
             await this.loadClubsForCreate();
+            const control = document.getElementById('create-event-control');
+            if (control) {
+                control.style.display = 'block';
+            }
+            const button = document.getElementById('show-create-event-btn');
+            if (button) {
+                button.addEventListener('click', () => this.showCreateEventForm());
+            }
         }
+    },
+
+    showCreateEventForm() {
+        const control = document.getElementById('create-event-control');
+        const section = document.getElementById('create-event-section');
+        if (control) control.style.display = 'none';
+        if (section) section.style.display = 'block';
     },
 
     async loadEvents() {
@@ -23,6 +38,8 @@ const Events = {
 
             const data = await response.json();
             const events = data.results || data;
+            this.events = events;
+            const user = Auth.getUser();
 
             if (!events.length) {
                 Utils.showEmpty('events-grid', 'No events found.');
@@ -31,7 +48,12 @@ const Events = {
 
             const container = document.getElementById('events-grid');
 
-            container.innerHTML = events.map(event => `
+            container.innerHTML = events.map(event => {
+                const canManage = Auth.isAdmin() || (
+                    Auth.isClubAdmin() && event.club?.admin?.id === user.id
+                );
+
+                return `
                 <div class="card">
 
                     <div class="card-body">
@@ -47,14 +69,17 @@ const Events = {
                     </div>
 
                     <div class="card-footer">
-                        <button onclick="Events.register(${event.id})"
-                                class="btn btn-primary btn-sm">
-                            Register
-                        </button>
+                        ${canManage ? `
+                            <button onclick="Events.editEvent(${event.id})" class="btn btn-outline-primary btn-sm">Edit</button>
+                            <button onclick="Events.deleteEvent(${event.id})" class="btn btn-danger btn-sm">Delete</button>
+                        ` : `
+                            <button onclick="Events.register(${event.id})" class="btn btn-primary btn-sm">Register</button>
+                        `}
                     </div>
 
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
         } catch (error) {
             console.error(error);
@@ -82,12 +107,6 @@ const Events = {
                     option.textContent = club.name;
                     select.appendChild(option);
                 });
-                
-                // Show create event section
-                const createSection = document.getElementById('create-event-section');
-                if (createSection) {
-                    createSection.style.display = 'block';
-                }
             }
 
         } catch (error) {
@@ -115,6 +134,74 @@ const Events = {
 
         } catch (error) {
             Utils.showToast('Error registering', 'error');
+        }
+    },
+
+    async editEvent(eventId) {
+        const event = this.events?.find(item => item.id === eventId);
+        if (!event) {
+            Utils.showToast('Event not found', 'error');
+            return;
+        }
+
+        const title = prompt('Title', event.title);
+        if (title === null) return;
+
+        const description = prompt('Description', event.description);
+        if (description === null) return;
+
+        const date = prompt('Date & time (YYYY-MM-DDTHH:MM)', event.date ? event.date.replace(' ', 'T').slice(0, 16) : '');
+        if (date === null) return;
+
+        const location = prompt('Location', event.location);
+        if (location === null) return;
+
+        const capacityRaw = prompt('Capacity', event.capacity);
+        if (capacityRaw === null) return;
+        const capacity = parseInt(capacityRaw, 10);
+        if (Number.isNaN(capacity) || capacity <= 0) {
+            Utils.showToast('Invalid capacity', 'error');
+            return;
+        }
+
+        const payload = {
+            title,
+            description,
+            date: date.replace('T', ' '),
+            location,
+            capacity
+        };
+
+        try {
+            const response = await Utils.patch(CONFIG.ENDPOINTS.EVENT_UPDATE(eventId), payload);
+            const result = await response.json();
+            if (!response.ok) {
+                Utils.showToast(result.detail || result.error || 'Update failed', 'error');
+                return;
+            }
+
+            Utils.showToast('Event updated successfully');
+            this.loadEvents();
+        } catch (error) {
+            console.error('Edit event error:', error);
+            Utils.showToast('Failed to update event', 'error');
+        }
+    },
+
+    async deleteEvent(eventId) {
+        if (!confirm('Delete this event?')) return;
+        try {
+            const response = await Utils.delete(CONFIG.ENDPOINTS.EVENT_DELETE(eventId));
+            const result = await response.json();
+            if (!response.ok) {
+                Utils.showToast(result.detail || result.error || 'Delete failed', 'error');
+                return;
+            }
+            Utils.showToast('Event deleted successfully');
+            this.loadEvents();
+        } catch (error) {
+            console.error('Delete event error:', error);
+            Utils.showToast('Failed to delete event', 'error');
         }
     },
 

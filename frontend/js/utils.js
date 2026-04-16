@@ -219,8 +219,6 @@ const Utils = {
                         <span class="nav-username" id="nav-username"></span>
                         <span id="nav-role"></span>
                         <a href="dashboard.html" class="btn btn-outline-white btn-sm">Dashboard</a>
-                        ${Auth.isClubAdmin() ? '<a href="club-admin.html" class="btn btn-outline-white btn-sm">My Club</a>' : ''}
-                        ${Auth.isAdmin() ? '<a href="admin.html" class="btn btn-outline-white btn-sm">Admin</a>' : ''}
                         <button onclick="Auth.logout()" class="btn btn-danger btn-sm">Logout</button>
                     </div>
                 </div>

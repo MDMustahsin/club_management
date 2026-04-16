@@ -30,12 +30,10 @@ const Donations = {
     async submit(e) {
         e.preventDefault();
 
-        if (!Auth.requireLogin()) return;
-
         const clubId = document.getElementById('club').value;
         const data = {
-            club: parseInt(clubId),
-            amount: document.getElementById('amount').value,
+            club: parseInt(clubId, 10),
+            amount: parseFloat(document.getElementById('amount').value),
             message: document.getElementById('message').value
         };
 
@@ -51,7 +49,7 @@ const Donations = {
                 Utils.showToast('Donation successful 💚');
                 document.getElementById('donationForm').reset();
             } else {
-                Utils.showToast(res.detail || 'Failed', 'error');
+                Utils.showToast(res.detail || res.error || 'Failed', 'error');
             }
 
         } catch (error) {
