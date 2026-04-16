@@ -18,6 +18,7 @@ const CONFIG = {
 
         // Clubs
         CLUBS: '/clubs/',
+        CLUB_ADMIN: '/clubs/admin/',
         CLUB_CREATE: '/clubs/create/',
         CLUB_DETAIL: (id) => `/clubs/${id}/`,
         CLUB_UPDATE: (id) => `/clubs/${id}/update/`,

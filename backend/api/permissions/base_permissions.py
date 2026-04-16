@@ -69,3 +69,15 @@ class IsOwnerOrAdmin(BasePermission):
         
         owner = getattr(obj, 'student', None) or getattr(obj, 'user', None)
         return owner == request.user
+
+
+class IsClubAdminOrAdmin(BasePermission):
+    """Club admin for their club or global admin"""
+    message = 'Only the club admin or global admin can perform this action.'
+
+    def has_object_permission(self, request, view, obj):
+        if request.user.role == 'ADMIN':
+            return True
+        if request.user.role == 'CLUB_ADMIN' and obj.admin == request.user:
+            return True
+        return False

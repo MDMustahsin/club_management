@@ -3,6 +3,13 @@ const Dashboard = {
     init() {
         if (!Auth.requireLogin()) return;
 
+        // Show clubs section for managers
+        if (this.isManager()) {
+            document.getElementById('clubs-link').style.display = 'block';
+            document.getElementById('stat-clubs-card').style.display = 'block';
+            document.getElementById('clubs').style.display = 'block';
+        }
+
         this.loadAll();
     },
 
@@ -30,6 +37,9 @@ const Dashboard = {
         await this.loadMemberships();
         await this.loadEvents();
         await this.loadDonations();
+        if (this.isManager()) {
+            await this.loadClubs();
+        }
     },
 
     // 🔹 MEMBERSHIPS
@@ -201,6 +211,64 @@ const Dashboard = {
         }
     },
 
+    async editClub(clubId) {
+        // For simplicity, use prompts like events
+        const name = prompt('Club Name');
+        if (name === null) return;
+
+        const description = prompt('Description');
+        if (description === null) return;
+
+        const maxMembersRaw = prompt('Max Members');
+        if (maxMembersRaw === null) return;
+        const max_members = parseInt(maxMembersRaw, 10);
+        if (Number.isNaN(max_members) || max_members <= 0) {
+            Utils.showToast('Invalid max members', 'error');
+            return;
+        }
+
+        const payload = {
+            name,
+            description,
+            max_members
+        };
+
+        try {
+            const response = await Utils.patch(
+                CONFIG.ENDPOINTS.CLUB_UPDATE(clubId),
+                payload
+            );
+            const result = await response.json();
+            if (!response.ok) {
+                Utils.showToast(result.detail || result.error || 'Update failed', 'error');
+                return;
+            }
+            Utils.showToast('Club updated successfully');
+            this.loadClubs();
+        } catch (error) {
+            console.error('Update club error:', error);
+            Utils.showToast('Failed to update club', 'error');
+        }
+    },
+
+    async deleteClub(clubId) {
+        if (!confirm('Delete this club?')) return;
+
+        try {
+            const response = await Utils.delete(CONFIG.ENDPOINTS.CLUB_DELETE(clubId));
+            const result = await response.json();
+            if (!response.ok) {
+                Utils.showToast(result.detail || result.error || 'Delete failed', 'error');
+                return;
+            }
+            Utils.showToast(result.message || 'Club deleted');
+            this.loadClubs();
+        } catch (error) {
+            console.error('Delete club error:', error);
+            Utils.showToast('Failed to delete club', 'error');
+        }
+    },
+
     // 🔹 DONATIONS
     async loadDonations() {
         try {
@@ -240,6 +308,51 @@ const Dashboard = {
         } catch (error) {
             console.error('Dashboard donations load error:', error);
             Utils.showError('donations-list', 'Failed to load donations.');
+        }
+    },
+
+    // 🔹 CLUBS
+    async loadClubs() {
+        try {
+            const response = await Utils.get(CONFIG.ENDPOINTS.CLUB_ADMIN);
+            const data = await response.json();
+            const clubs = data.results || data;
+
+            document.getElementById('stat-clubs').innerText = clubs.length;
+
+            const container = document.getElementById('clubs-list');
+
+            if (!clubs.length) {
+                Utils.showEmpty('clubs-list', 'No clubs found.');
+                return;
+            }
+
+            container.innerHTML = clubs.map(club => {
+                const canManage = Auth.isAdmin() || (
+                    Auth.isClubAdmin() && club.admin?.id === Auth.getUser().id
+                );
+
+                return `
+                <div class="card">
+                    <div class="card-body">
+                        <h4>${club.name}</h4>
+                        <p>${club.description || 'No description'}</p>
+                        <p>👥 Max: ${club.max_members}</p>
+                        ${club.admin ? `<p>Admin: ${club.admin.username}</p>` : '<p>No admin assigned</p>'}
+                    </div>
+                    <div class="card-footer">
+                        ${canManage ? `
+                            <button onclick="Dashboard.editClub(${club.id})" class="btn btn-outline-primary btn-sm">Edit</button>
+                            <button onclick="Dashboard.deleteClub(${club.id})" class="btn btn-danger btn-sm">Delete</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+        } catch (error) {
+            console.error('Dashboard clubs load error:', error);
+            Utils.showError('clubs-list', 'Failed to load clubs.');
         }
     },
 

@@ -38,6 +38,10 @@
             <div class="sidebar-link" onclick="Dashboard.showSection('donations')">
                 💰 Donations
             </div>
+
+            <div id="clubs-link" class="sidebar-link" onclick="Dashboard.showSection('clubs')" style="display: none;">
+                🏛️ Clubs
+            </div>
         </div>
     </div>
 
@@ -73,6 +77,14 @@
                     </div>
                 </div>
 
+                <div id="stat-clubs-card" class="stat-card" style="display: none;">
+                    <div class="stat-icon purple">🏛️</div>
+                    <div>
+                        <div class="stat-value" id="stat-clubs">0</div>
+                        <div class="stat-label">Clubs</div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -98,6 +110,14 @@
                 <h2>My Donations</h2>
             </div>
             <div id="donations-list" class="grid-3"></div>
+        </div>
+
+        <!-- 🔹 CLUBS -->
+        <div id="clubs" class="dashboard-section" style="display: none;">
+            <div class="section-header">
+                <h2>Manage Clubs</h2>
+            </div>
+            <div id="clubs-list" class="grid-3"></div>
         </div>
 
     </div>

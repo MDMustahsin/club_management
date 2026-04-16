@@ -8,7 +8,7 @@ from .serializers import (
     ClubCreateSerializer,
     ClubUpdateSerializer
 )
-from api.permissions.base_permissions import IsAdminRole, IsAdminOrReadOnly, IsAdminOrClubAdmin
+from api.permissions.base_permissions import IsAdminRole, IsAdminOrReadOnly, IsAdminOrClubAdmin, IsClubAdminOrAdmin
 
 
 class ClubListView(generics.ListAPIView):
@@ -43,6 +43,22 @@ class ClubDetailView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
 
+class AdminClubListView(generics.ListAPIView):
+    """
+    GET /api/clubs/admin/ — admin and club admin access
+    Lists all clubs for admin, only their club for club admin
+    """
+    serializer_class = ClubSerializer
+    permission_classes = [IsAdminOrClubAdmin]
+
+    def get_queryset(self):
+        if self.request.user.role == 'ADMIN':
+            return Club.objects.filter(is_active=True)
+        elif self.request.user.role == 'CLUB_ADMIN':
+            return Club.objects.filter(is_active=True, admin=self.request.user)
+        return Club.objects.none()
+
+
 class ClubCreateView(generics.CreateAPIView):
     """
     OOP Principle: Inheritance + Polymorphism
@@ -73,11 +89,11 @@ class ClubCreateView(generics.CreateAPIView):
 class ClubUpdateView(generics.UpdateAPIView):
     """
     OOP Principle: Inheritance + Polymorphism
-    PATCH /api/clubs/<id>/update/ — admin only
+    PATCH /api/clubs/<id>/update/ — admin or club admin of that club
     """
     queryset = Club.objects.filter(is_active=True)
     serializer_class = ClubUpdateSerializer
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsClubAdminOrAdmin]
     http_method_names = ['patch']
 
     def update(self, request, *args, **kwargs):
@@ -100,11 +116,11 @@ class ClubUpdateView(generics.UpdateAPIView):
 class ClubDeleteView(generics.DestroyAPIView):
     """
     OOP Principle: Inheritance + Polymorphism
-    DELETE /api/clubs/<id>/delete/ — admin only
+    DELETE /api/clubs/<id>/delete/ — admin or club admin of that club
     Uses soft delete from BaseModel
     """
     queryset = Club.objects.filter(is_active=True)
-    permission_classes = [IsAdminRole]
+    permission_classes = [IsClubAdminOrAdmin]
 
     def destroy(self, request, *args, **kwargs):
         """
