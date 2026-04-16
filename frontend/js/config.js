@@ -7,7 +7,7 @@ const CONFIG = {
     // Detect if running locally or on production
     API_BASE_URL: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         ? 'http://127.0.0.1:8000/api'
-        : 'https://club-management-api.onrender.com/api', // 🔥 UPDATE THIS WITH YOUR RENDER URL
+        : 'https://club-management-e91v.onrender.com/api', // ✅ Connected to Render backend
     ENDPOINTS: {
         // Auth
         REGISTER: '/auth/register/',

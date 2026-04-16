@@ -123,4 +123,10 @@ SIMPLE_JWT = {
 }
 
 # CORS — allow frontend to talk to backend
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:8080',
+    'http://127.0.0.1:8080',
+    'https://club-management-tau.vercel.app',
+]
