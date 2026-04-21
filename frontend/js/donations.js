@@ -71,14 +71,18 @@ const Donations = {
                 // Store for persistent notification
                 localStorage.setItem('donation_success', JSON.stringify(donationData));
                 
-                // Show toast and redirect to dashboard
+                // Show toast and redirect based on login status
                 Utils.showToast(`Donation successful! Transaction ID: ${transactionId} 💚`);
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
                 
-                document.getElementById('donationForm').reset();
-            } else {
+                if (Auth.isLoggedIn()) {
+                    // Redirect logged-in users to dashboard
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    // For guests, just reset the form and show success
+                    document.getElementById('donationForm').reset();
+                }
                 Utils.showToast(res.detail || res.error || 'Failed', 'error');
             }
 

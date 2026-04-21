@@ -46,6 +46,13 @@ const Dashboard = {
 
     // 🔹 MEMBERSHIPS
     async loadMemberships() {
+        // Only load memberships if user is authenticated
+        if (!Auth.isLoggedIn()) {
+            Utils.showEmpty('memberships-list', 'Please log in to view memberships.');
+            document.getElementById('stat-memberships').innerText = '0';
+            return;
+        }
+
         try {
             const response = await Utils.get(CONFIG.ENDPOINTS.MEMBERSHIP_MY);
             const data = await response.json();
@@ -85,6 +92,14 @@ const Dashboard = {
 
     // 🔹 EVENTS
     async loadEvents() {
+        // Only load events if user is authenticated
+        if (!Auth.isLoggedIn()) {
+            Utils.showEmpty('events-list', 'Please log in to view events.');
+            document.getElementById('stat-events').innerText = '0';
+            document.querySelector('#events h2').textContent = 'Events';
+            return;
+        }
+
         try {
             const endpoint = this.isManager()
                 ? CONFIG.ENDPOINTS.EVENTS
@@ -273,6 +288,14 @@ const Dashboard = {
 
     // 🔹 DONATIONS
     async loadDonations() {
+        // Only load donations if user is authenticated
+        if (!Auth.isLoggedIn()) {
+            Utils.showEmpty('donations-list', 'Please log in to view donations.');
+            document.getElementById('stat-donations').innerText = '0';
+            document.querySelector('#donations h2').textContent = 'Donations';
+            return;
+        }
+
         try {
             const endpoint = this.isManager()
                 ? CONFIG.ENDPOINTS.DONATION_ALL
