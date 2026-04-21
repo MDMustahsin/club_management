@@ -61,7 +61,22 @@ const Donations = {
 
             if (response.ok) {
                 const transactionId = res.donation.transaction_id;
+                const donationData = {
+                    transactionId: transactionId,
+                    amount: res.donation.amount,
+                    clubName: res.donation.club.name,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Store for persistent notification
+                localStorage.setItem('donation_success', JSON.stringify(donationData));
+                
+                // Show toast and redirect to dashboard
                 Utils.showToast(`Donation successful! Transaction ID: ${transactionId} 💚`);
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+                
                 document.getElementById('donationForm').reset();
             } else {
                 Utils.showToast(res.detail || res.error || 'Failed', 'error');

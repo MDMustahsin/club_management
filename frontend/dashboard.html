@@ -48,6 +48,18 @@
     <!-- Main -->
     <div class="dashboard-main">
 
+        <!-- Success Notification -->
+        <div id="donation-success-notification" class="success-notification" style="display: none;">
+            <div class="notification-content">
+                <span class="notification-icon">✅</span>
+                <div class="notification-text">
+                    <div class="notification-title">Donation Successful!</div>
+                    <div class="notification-details" id="donation-details"></div>
+                </div>
+                <button class="notification-close" onclick="Dashboard.closeDonationNotification()">✕</button>
+            </div>
+        </div>
+
         <!-- 🔹 OVERVIEW -->
         <div id="overview" class="dashboard-section active">
 

@@ -9,6 +9,9 @@ const Dashboard = {
             document.getElementById('stat-clubs-card').style.display = 'block';
         }
 
+        // Show donation success notification if exists
+        this.showDonationSuccessNotification();
+
         this.loadAll();
     },
 
@@ -293,15 +296,21 @@ const Dashboard = {
                     <div class="card-body">
                         <h4>${d.club.name}</h4>
                         <p>💰 ${d.amount}</p>
+                        <p>🔢 Transaction ID: ${d.transaction_id}</p>
                         ${donorBadge(d.donor)}
                         ${Utils.getStatusBadge(d.status)}
                     </div>
                 </div>
             `).join('');
 
-            function donorBadge(donor) {
-                if (!donor) return '<p><em>Anonymous donor</em></p>';
-                return `<p>Donor: ${donor.username || donor.email}</p>`;
+            function donorBadge(donation) {
+                if (donation.donor) {
+                    return `<p>Donor: ${donation.donor.username || donation.donor.email}</p>`;
+                } else if (donation.guest_name) {
+                    return `<p>Guest: ${donation.guest_name} (${donation.guest_email})</p>`;
+                } else {
+                    return '<p><em>Anonymous donor</em></p>';
+                }
             }
 
         } catch (error) {
@@ -377,5 +386,34 @@ const Dashboard = {
             Utils.showToast('Cancelled');
             this.loadEvents();
         }
+    },
+
+    // 🔹 DONATION SUCCESS NOTIFICATION
+    showDonationSuccessNotification() {
+        const donationData = localStorage.getItem('donation_success');
+        if (!donationData) return;
+
+        try {
+            const data = JSON.parse(donationData);
+            const notification = document.getElementById('donation-success-notification');
+            const details = document.getElementById('donation-details');
+            
+            details.innerHTML = `
+                <strong>Transaction ID:</strong> ${data.transactionId}<br>
+                <strong>Amount:</strong> $${data.amount}<br>
+                <strong>Club:</strong> ${data.clubName}<br>
+                <strong>Date:</strong> ${Utils.formatDateTime(data.timestamp)}
+            `;
+            
+            notification.style.display = 'block';
+        } catch (error) {
+            console.error('Error showing donation notification:', error);
+        }
+    },
+
+    closeDonationNotification() {
+        const notification = document.getElementById('donation-success-notification');
+        notification.style.display = 'none';
+        localStorage.removeItem('donation_success');
     }
 };

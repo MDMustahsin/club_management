@@ -145,3 +145,61 @@
     min-height: 100px;
     resize: vertical;
 }
+
+/* ── Success Notification ── */
+.success-notification {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    color: white;
+    padding: 16px;
+    margin-bottom: 24px;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.notification-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.notification-text {
+    flex: 1;
+}
+
+.notification-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+}
+
+.notification-details {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+
+.notification-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
