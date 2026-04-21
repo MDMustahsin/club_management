@@ -301,8 +301,17 @@ const Dashboard = {
                 ? CONFIG.ENDPOINTS.DONATION_ALL
                 : CONFIG.ENDPOINTS.DONATION_MY;
             const response = await Utils.get(endpoint);
+
+            if (!response.ok) {
+                console.error('API Error:', response.status, response.statusText);
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Error response:', errorData);
+                Utils.showError('donations-list', `Failed to load donations. (${response.status})`);
+                return;
+            }
+
             const data = await response.json();
-            const donations = data.results || data;
+            const donations = Array.isArray(data) ? data : (data.results || []);
 
             document.getElementById('stat-donations').innerText = donations.length;
             document.querySelector('#donations h2').textContent = this.isManager() ? 'Donations' : 'My Donations';
@@ -314,27 +323,28 @@ const Dashboard = {
                 return;
             }
 
-            container.innerHTML = donations.map(d => `
+            container.innerHTML = donations.map(d => {
+                let donorBadgeHTML = '';
+                if (d.donor) {
+                    donorBadgeHTML = `<p>Donor: ${d.donor.username || d.donor.email}</p>`;
+                } else if (d.guest_name) {
+                    donorBadgeHTML = `<p>Guest: ${d.guest_name} (${d.guest_email})</p>`;
+                } else {
+                    donorBadgeHTML = '<p><em>Anonymous donor</em></p>';
+                }
+
+                return `
                 <div class="card">
                     <div class="card-body">
                         <h4>${d.club.name}</h4>
                         <p>💰 ${d.amount}</p>
                         <p>🔢 Transaction ID: ${d.transaction_id}</p>
-                        ${donorBadge(d.donor)}
+                        ${donorBadgeHTML}
                         ${Utils.getStatusBadge(d.status)}
                     </div>
                 </div>
-            `).join('');
-
-            function donorBadge(donation) {
-                if (donation.donor) {
-                    return `<p>Donor: ${donation.donor.username || donation.donor.email}</p>`;
-                } else if (donation.guest_name) {
-                    return `<p>Guest: ${donation.guest_name} (${donation.guest_email})</p>`;
-                } else {
-                    return '<p><em>Anonymous donor</em></p>';
-                }
-            }
+            `;
+            }).join('');
 
         } catch (error) {
             console.error('Dashboard donations load error:', error);

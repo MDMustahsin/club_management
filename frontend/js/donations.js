@@ -71,17 +71,15 @@ const Donations = {
                 // Store for persistent notification
                 localStorage.setItem('donation_success', JSON.stringify(donationData));
                 
-                // Show toast and redirect based on login status
-                Utils.showToast(`Donation successful! Transaction ID: ${transactionId} 💚`);
-                
                 if (Auth.isLoggedIn()) {
                     // Redirect logged-in users to dashboard
+                    Utils.showToast(`Donation successful! Transaction ID: ${transactionId} 💚`);
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 1500);
                 } else {
-                    // For guests, just reset the form and show success
-                    document.getElementById('donationForm').reset();
+                    // For guests, show persistent notification
+                    Donations.showGuestSuccessNotification(donationData);
                 }
             } else {
                 Utils.showToast(res.detail || res.error || 'Failed', 'error');
@@ -90,5 +88,27 @@ const Donations = {
         } catch (error) {
             Utils.showToast('Error processing donation', 'error');
         }
+    },
+
+    showGuestSuccessNotification(donationData) {
+        const notification = document.getElementById('guest-donation-success');
+        const details = document.getElementById('guest-donation-details');
+        
+        details.innerHTML = `
+            <strong>Transaction ID:</strong> ${donationData.transactionId}<br>
+            <strong>Amount:</strong> $${donationData.amount}<br>
+            <strong>Club:</strong> ${donationData.clubName}<br>
+            <strong>Date:</strong> ${Utils.formatDateTime(donationData.timestamp)}
+        `;
+        
+        notification.style.display = 'block';
+        
+        // Reset form after showing notification
+        document.getElementById('donationForm').reset();
+    },
+
+    closeGuestNotification() {
+        const notification = document.getElementById('guest-donation-success');
+        notification.style.display = 'none';
     }
 };
