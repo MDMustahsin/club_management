@@ -83,6 +83,7 @@ const Donations = {
                     // For guests, just reset the form and show success
                     document.getElementById('donationForm').reset();
                 }
+            } else {
                 Utils.showToast(res.detail || res.error || 'Failed', 'error');
             }
 

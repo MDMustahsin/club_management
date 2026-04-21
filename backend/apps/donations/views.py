@@ -50,7 +50,7 @@ class MyDonationsView(generics.ListAPIView):
     def get_queryset(self):
         return Donation.objects.filter(
             donor=self.request.user
-        )
+        ).select_related('donor', 'club')
 
 
 # ─────────────────────────────────────────────
@@ -79,7 +79,7 @@ class AllDonationsView(generics.ListAPIView):
         if status_filter:
             queryset = queryset.filter(status=status_filter)
 
-        return queryset
+        return queryset.select_related('donor', 'club')
 
 
 # ─────────────────────────────────────────────
