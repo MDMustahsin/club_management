@@ -3,6 +3,14 @@ const Donations = {
     async init() {
         await this.loadClubs();
         
+        // Show guest fields if not logged in
+        if (!Auth.isLoggedIn()) {
+            document.getElementById('guestFields').style.display = 'block';
+            document.getElementById('guestEmailField').style.display = 'block';
+            document.getElementById('guestName').required = true;
+            document.getElementById('guestEmail').required = true;
+        }
+        
         document.getElementById('donationForm')
             .addEventListener('submit', (e) => this.submit(e));
     },
@@ -37,6 +45,12 @@ const Donations = {
             message: document.getElementById('message').value
         };
 
+        // Add guest fields if not logged in
+        if (!Auth.isLoggedIn()) {
+            data.guest_name = document.getElementById('guestName').value;
+            data.guest_email = document.getElementById('guestEmail').value;
+        }
+
         try {
             const response = await Utils.post(
                 CONFIG.ENDPOINTS.DONATION_CREATE,
@@ -46,7 +60,8 @@ const Donations = {
             const res = await response.json();
 
             if (response.ok) {
-                Utils.showToast('Donation successful 💚');
+                const transactionId = res.donation.transaction_id;
+                Utils.showToast(`Donation successful! Transaction ID: ${transactionId} 💚`);
                 document.getElementById('donationForm').reset();
             } else {
                 Utils.showToast(res.detail || res.error || 'Failed', 'error');

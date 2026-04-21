@@ -17,7 +17,7 @@ class DonationSerializer(BaseSerializer):
     class Meta:
         model = Donation
         fields = (
-            'id', 'donor', 'club', 'amount',
+            'id', 'donor', 'guest_name', 'guest_email', 'club', 'amount',
             'status', 'status_display',
             'transaction_id', 'message',
             'created_at', 'updated_at'
@@ -43,23 +43,34 @@ class DonationCreateSerializer(BaseSerializer):
 
     class Meta:
         model = Donation
-        fields = ('id', 'club', 'amount', 'message')
+        fields = ('id', 'club', 'amount', 'message', 'guest_name', 'guest_email')
         read_only_fields = ('id',)
 
-    def validate_amount(self, value):
-        if value <= 0:
-            raise serializers.ValidationError(
-                'Donation amount must be greater than 0.'
-            )
-        return value
+    def validate(self, data):
+        user = self.get_requesting_user()
+        is_authenticated = user and getattr(user, 'is_authenticated', False)
+        
+        if not is_authenticated:
+            # For guests, require name and email
+            if not data.get('guest_name'):
+                raise serializers.ValidationError({'guest_name': 'Name is required for guest donations.'})
+            if not data.get('guest_email'):
+                raise serializers.ValidationError({'guest_email': 'Email is required for guest donations.'})
+        
+        return data
 
     def create(self, validated_data):
+        import uuid
         user = self.get_requesting_user()
         if not user or not getattr(user, 'is_authenticated', False):
             user = None
 
+        # Generate unique transaction ID
+        transaction_id = str(uuid.uuid4())
+        
         return Donation.objects.create(
             donor=user,
+            transaction_id=transaction_id,
             **validated_data
         )
 

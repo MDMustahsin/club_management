@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+import uuid
 from api.base_models import TimeStampedModel
 from apps.clubs.models import Club
 
@@ -27,6 +28,10 @@ class Donation(TimeStampedModel):
         null=True
     )
 
+    # For guest donations
+    guest_name = models.CharField(max_length=255, blank=True, null=True)
+    guest_email = models.EmailField(blank=True, null=True)
+
     club = models.ForeignKey(
         Club,
         on_delete=models.CASCADE,
@@ -46,8 +51,8 @@ class Donation(TimeStampedModel):
 
     transaction_id = models.CharField(
         max_length=255,
-        blank=True,
-        null=True
+        unique=True,
+        default=uuid.uuid4
     )
 
     message = models.TextField(blank=True, null=True)
@@ -57,7 +62,8 @@ class Donation(TimeStampedModel):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.donor.username} → {self.club.name} (${self.amount})"
+        donor_name = self.donor.username if self.donor else self.guest_name or 'Anonymous'
+        return f"{donor_name} → {self.club.name} (${self.amount})"
 
     # ── Encapsulated status check methods ──
 
