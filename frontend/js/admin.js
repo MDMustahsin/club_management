@@ -35,21 +35,27 @@ const Admin = {
     // 🔹 STATS
     async loadStats() {
         try {
-            const users = await (await Utils.get(CONFIG.ENDPOINTS.USERS)).json();
-            const clubs = await (await Utils.get(CONFIG.ENDPOINTS.CLUBS)).json();
-            const donations = await (await Utils.get(CONFIG.ENDPOINTS.DONATION_ALL)).json();
+            const usersRes = await Utils.get(CONFIG.ENDPOINTS.USERS);
+            const clubsRes = await Utils.get(CONFIG.ENDPOINTS.CLUBS);
+            const donationsRes = await Utils.get(CONFIG.ENDPOINTS.DONATION_ALL);
+            
+            if (usersRes.ok) {
+                const users = await usersRes.json();
+                document.getElementById('stat-users').innerText = (users.results || users).length;
+            }
+            
+            if (clubsRes.ok) {
+                const clubs = await clubsRes.json();
+                document.getElementById('stat-clubs').innerText = (clubs.results || clubs).length;
+            }
+            
+            if (donationsRes.ok) {
+                const donations = await donationsRes.json();
+                document.getElementById('stat-donations').innerText = (donations.results || donations).length;
+            }
 
-            document.getElementById('stat-users').innerText =
-                (users.results || users).length;
-
-            document.getElementById('stat-clubs').innerText =
-                (clubs.results || clubs).length;
-
-            document.getElementById('stat-donations').innerText =
-                (donations.results || donations).length;
-
-        } catch {
-            console.log('Stats error');
+        } catch (error) {
+            console.error('Stats error:', error);
         }
     },
 
@@ -298,19 +304,54 @@ const Admin = {
 
     // 🔹 DONATIONS
     async loadDonations() {
-        const res = await Utils.get(CONFIG.ENDPOINTS.DONATION_ALL);
-        const data = await res.json();
-        const donations = data.results || data;
+        try {
+            const res = await Utils.get(CONFIG.ENDPOINTS.DONATION_ALL);
+            
+            if (!res.ok) {
+                console.error('API Error:', res.status, res.statusText);
+                Utils.showError('donations-list', `Failed to load donations. (${res.status})`);
+                document.getElementById('stat-donations').innerText = '0';
+                return;
+            }
+            
+            const data = await res.json();
+            const donations = data.results || data;
 
-        const container = document.getElementById('donations-list');
+            document.getElementById('stat-donations').innerText = donations.length;
+            const container = document.getElementById('donations-list');
 
-        container.innerHTML = donations.map(d => `
-            <div class="card">
-                <h4>${d.club.name}</h4>
-                <p>💰 ${d.amount}</p>
-                ${Utils.getStatusBadge(d.status)}
-            </div>
-        `).join('');
+            if (!donations.length) {
+                Utils.showEmpty('donations-list', 'No donations found.');
+                return;
+            }
+
+            container.innerHTML = donations.map(d => {
+                let donorBadgeHTML = '';
+                if (d.donor) {
+                    donorBadgeHTML = `<p>Donor: ${d.donor.username || d.donor.email}</p>`;
+                } else if (d.guest_name) {
+                    donorBadgeHTML = `<p>Guest: ${d.guest_name} (${d.guest_email})</p>`;
+                } else {
+                    donorBadgeHTML = '<p><em>Anonymous donor</em></p>';
+                }
+
+                return `
+                    <div class="card">
+                        <div class="card-body">
+                            <h4>${d.club.name}</h4>
+                            <p>💰 ${d.amount}</p>
+                            <p>🔢 Transaction ID: ${d.transaction_id}</p>
+                            ${donorBadgeHTML}
+                            ${Utils.getStatusBadge(d.status)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (error) {
+            console.error('Admin donations load error:', error);
+            Utils.showError('donations-list', 'Failed to load donations.');
+            document.getElementById('stat-donations').innerText = '0';
+        }
     },
 
     // 🔹 CREATE CLUB MODAL

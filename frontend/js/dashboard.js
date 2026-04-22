@@ -325,10 +325,11 @@ const Dashboard = {
 
             container.innerHTML = donations.map(d => {
                 let donorBadgeHTML = '';
-                if (d.donor) {
+                // Check for donor with proper fallback
+                if (d.donor && (d.donor.username || d.donor.email)) {
                     donorBadgeHTML = `<p>Donor: ${d.donor.username || d.donor.email}</p>`;
-                } else if (d.guest_name) {
-                    donorBadgeHTML = `<p>Guest: ${d.guest_name} (${d.guest_email})</p>`;
+                } else if (d.guest_name && d.guest_name.trim()) {
+                    donorBadgeHTML = `<p>Guest: ${d.guest_name} (${d.guest_email || 'no email'})</p>`;
                 } else {
                     donorBadgeHTML = '<p><em>Anonymous donor</em></p>';
                 }
@@ -337,7 +338,7 @@ const Dashboard = {
                 <div class="card">
                     <div class="card-body">
                         <h4>${d.club.name}</h4>
-                        <p>💰 ${d.amount}</p>
+                        <p>💰 $${d.amount}</p>
                         <p>🔢 Transaction ID: ${d.transaction_id}</p>
                         ${donorBadgeHTML}
                         ${Utils.getStatusBadge(d.status)}

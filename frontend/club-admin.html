@@ -37,6 +37,10 @@
             <div class="sidebar-link" onclick="ClubAdmin.showSection(event, 'events')">
                 📅 Events
             </div>
+
+            <div class="sidebar-link" onclick="ClubAdmin.showSection(event, 'donations')">
+                💰 Donations
+            </div>
         </div>
     </div>
 
@@ -97,6 +101,12 @@
             </div>
 
             <div id="club-events-list" class="grid-3"></div>
+        </div>
+
+        <!-- Donations -->
+        <div id="donations" class="dashboard-section">
+            <h2>Club Donations</h2>
+            <div id="club-donations-list" class="grid-3"></div>
         </div>
 
     </div>

@@ -80,6 +80,7 @@ const ClubAdmin = {
         this.loadPendingApplications();
         this.loadClubMembers();
         this.loadClubEvents();
+        this.loadClubDonations();
         this.showCreateEventSection();
 
         const sidebarButton = document.querySelector('.sidebar-link[onclick*="pending"]');
@@ -298,6 +299,53 @@ const ClubAdmin = {
             }
         } catch (err) {
             Utils.showToast('Something went wrong', 'error');
+        }
+    },
+
+    // 🔹 Load club donations
+    async loadClubDonations() {
+        if (!this.selectedClubId) return;
+
+        try {
+            const response = await Utils.get(CONFIG.ENDPOINTS.DONATION_ALL);
+            const data = await response.json();
+            const allDonations = data.results || data;
+            
+            // Filter donations for the selected club
+            const donations = allDonations.filter(d => d.club && d.club.id === this.selectedClubId);
+
+            const container = document.getElementById('club-donations-list');
+
+            if (!donations.length) {
+                container.innerHTML = '<p>No donations for this club yet.</p>';
+                return;
+            }
+
+            container.innerHTML = donations.map(d => {
+                let donorBadgeHTML = '';
+                if (d.donor && (d.donor.username || d.donor.email)) {
+                    donorBadgeHTML = `<p>Donor: ${d.donor.username || d.donor.email}</p>`;
+                } else if (d.guest_name && d.guest_name.trim()) {
+                    donorBadgeHTML = `<p>Guest: ${d.guest_name} (${d.guest_email || 'no email'})</p>`;
+                } else {
+                    donorBadgeHTML = '<p><em>Anonymous donor</em></p>';
+                }
+
+                return `
+                    <div class="card">
+                        <div class="card-body">
+                            <h4>$${d.amount}</h4>
+                            <p>🔢 Transaction ID: ${d.transaction_id}</p>
+                            ${donorBadgeHTML}
+                            ${Utils.getStatusBadge(d.status)}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (error) {
+            console.error('Error loading donations:', error);
+            Utils.showError('club-donations-list', 'Failed to load donations.');
         }
     },
 
